@@ -28,5 +28,6 @@ export interface ChartDataPoint {
   date: string;
   value: number;
   timestamp: number;
+  regressionValue?: number;
 }
 

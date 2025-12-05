@@ -46,6 +46,7 @@ export const useInvestmentChart = (
       .sort((a: ChartDataPoint, b: ChartDataPoint) => a.timestamp - b.timestamp);
   }, [data]);
 
+
   // Filtrar datos según el timeframe seleccionado
   const filteredChartData = useMemo((): ChartDataPoint[] => {
     if (allChartData.length === 0) return [];
@@ -79,6 +80,40 @@ export const useInvestmentChart = (
     
     return allChartData.filter(point => point.timestamp >= startTimestamp);
   }, [allChartData, selectedTimeframe]);
+
+
+  // Calcular regresión lineal y combinar con datos filtrados
+  const chartDataWithRegression = useMemo((): ChartDataPoint[] => {
+    if (filteredChartData.length === 0) return [];
+    
+    if (filteredChartData.length < 2) {
+      return filteredChartData.map(point => ({
+        ...point,
+        regressionValue: point.value,
+      }));
+    }
+
+    const n = filteredChartData.length;
+    const xValues = Array.from({ length: n }, (_, i) => i);
+    const yValues = filteredChartData.map(point => point.value);
+    
+    const sumX = xValues.reduce((sum, x) => sum + x, 0);
+    const sumY = yValues.reduce((sum, y) => sum + y, 0);
+    const sumXY = xValues.reduce((sum, x, i) => sum + x * yValues[i], 0);
+    const sumXX = xValues.reduce((sum, x) => sum + x * x, 0);
+    
+    const denominator = n * sumXX - sumX * sumX;
+    const m = denominator !== 0 
+      ? (n * sumXY - sumX * sumY) / denominator 
+      : 0;
+    const b = (sumY - m * sumX) / n;
+    
+    return filteredChartData.map((point, index) => ({
+      ...point,
+      regressionValue: m * index + b,
+    }));
+  }, [filteredChartData]);
+
 
   // Calcular qué ticks mostrar según el timeframe
   const xAxisTicks = useMemo(() => {
@@ -140,6 +175,7 @@ export const useInvestmentChart = (
     return ticks;
   }, [filteredChartData, selectedTimeframe]);
 
+
   // Formatear los ticks según el timeframe
   const formatXAxisTick = (value: string): string => {
     try {
@@ -172,6 +208,7 @@ export const useInvestmentChart = (
     }
   };
 
+  
   // Calcular estadísticas basadas en los datos FILTRADOS
   const currentValue: number = filteredChartData.length > 0 
     ? filteredChartData[filteredChartData.length - 1]?.value || 0 
@@ -204,7 +241,7 @@ export const useInvestmentChart = (
   return {
     loading,
     error,
-    filteredChartData,
+    filteredChartData: chartDataWithRegression,
     xAxisTicks,
     currentValue,
     totalGain,

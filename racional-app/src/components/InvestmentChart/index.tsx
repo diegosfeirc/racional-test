@@ -184,6 +184,15 @@ const InvestmentChart = () => {
                   activeDot={CHART_STYLES.activeDot}
                   connectNulls={false}
                 />
+                <Line
+                  type="linear"
+                  dataKey="regressionValue"
+                  stroke={CHART_STYLES.regressionLine.stroke}
+                  strokeWidth={CHART_STYLES.regressionLine.strokeWidth}
+                  dot={false}
+                  strokeDasharray={CHART_STYLES.regressionLine.strokeDasharray}
+                  connectNulls={false}
+                />
               </LineChart>
             </ResponsiveContainer>
           ) : (

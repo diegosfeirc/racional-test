@@ -2,6 +2,7 @@ export const CHART_STYLES = {
     margin: { top: 20, right: 50, left: 50, bottom: 20 },
     grid: { strokeDasharray: '3 3', stroke: '#E5E7EB' },
     axis: { stroke: '#6B7280', fontSize: '12px' },
+    regressionLine: { stroke: '#18daae', strokeWidth: 2, strokeDasharray: '5 5' },
     tooltip: {
       backgroundColor: '#fff',
       border: '1px solid #E5E7EB',
