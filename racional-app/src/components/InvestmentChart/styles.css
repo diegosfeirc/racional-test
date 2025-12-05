@@ -1,0 +1,442 @@
+/* Investment Chart Styles */
+
+.chart-container {
+  width: 100%;
+  padding: 1.75rem;
+  background: linear-gradient(to bottom, #FFFFFF 0%, #FAFAFA 100%);
+  border-radius: 1rem;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(229, 231, 235, 0.8);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .chart-container {
+    padding: 1.25rem;
+    border-radius: 0.875rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .chart-container {
+    padding: 1rem;
+    border-radius: 0.75rem;
+  }
+}
+
+.chart-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #8532d9 0%, #6d28a8 50%, #8532d9 100%);
+  opacity: 0.6;
+}
+
+.chart-container:hover {
+  box-shadow: 
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05),
+    0 0 0 1px rgba(133, 50, 217, 0.1);
+  transform: translateY(-2px);
+}
+
+.chart-header {
+  margin-bottom: 1.5rem;
+}
+
+.chart-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.25rem;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .chart-summary {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+.chart-summary-item {
+  display: flex;
+  gap: 0.625rem;
+  align-items: flex-start;
+  padding: 0.75rem;
+  background: rgba(249, 250, 251, 0.6);
+  border-radius: 0.625rem;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(229, 231, 235, 0.5);
+}
+
+.chart-summary-item:hover {
+  background: rgba(249, 250, 251, 0.9);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.chart-summary-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #8532d9 0%, #6d28a8 100%);
+  border-radius: 0.625rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 3px 5px rgba(133, 50, 217, 0.25);
+  transition: all 0.2s ease;
+}
+
+.chart-summary-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.chart-summary-item:hover .chart-summary-icon {
+  transform: scale(1.05);
+  box-shadow: 0 5px 10px rgba(133, 50, 217, 0.3);
+}
+
+.chart-summary-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.chart-summary-label {
+  font-size: 0.875rem;
+  color: #6B7280;
+  margin: 0;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  font-size: 0.75rem;
+}
+
+.chart-summary-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+@media (max-width: 640px) {
+  .chart-summary-value {
+    font-size: 1.125rem;
+  }
+}
+
+.chart-summary-value.positive {
+  color: #059669;
+}
+
+.chart-summary-value.negative {
+  color: #DC2626;
+}
+
+.chart-summary-value-purple {
+  color: #8532d9;
+}
+
+.chart-evolution-section {
+  margin-top: 1.5rem;
+}
+
+.chart-evolution-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 1rem;
+  letter-spacing: -0.01em;
+}
+
+.chart-period-selector {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 2px solid #F3F4F6;
+  padding-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.chart-period-button {
+  background: none;
+  border: none;
+  padding: 0.5rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #6B7280;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+  border-radius: 0.5rem;
+  margin-bottom: -0.5rem;
+}
+
+.chart-period-button:hover {
+  color: #8532d9;
+  background: rgba(133, 50, 217, 0.05);
+}
+
+.chart-period-button.active {
+  color: #8532d9;
+  font-weight: 600;
+  background: rgba(133, 50, 217, 0.08);
+}
+
+.chart-period-button.active::after {
+  content: '';
+  position: absolute;
+  bottom: -0.5rem;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #8532d9 0%, #6d28a8 100%);
+  border-radius: 2px 2px 0 0;
+}
+
+.chart-return-section {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 2px solid #F3F4F6;
+}
+
+.chart-return-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chart-return-label {
+  font-size: 0.875rem;
+  color: #6B7280;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
+.chart-info-icon {
+  cursor: help;
+}
+
+.chart-return-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.01em;
+}
+
+.chart-return-value.positive {
+  color: #059669;
+}
+
+.chart-return-value.negative {
+  color: #DC2626;
+}
+
+.chart-wrapper {
+  width: 100%;
+  min-height: 300px;
+  margin-bottom: 1.25rem;
+  position: relative;
+  background: rgba(249, 250, 251, 0.3);
+  border-radius: 0.625rem;
+  padding: 0.75rem;
+  border: 1px solid rgba(229, 231, 235, 0.5);
+}
+
+.chart-wrapper > div {
+  width: 100% !important;
+  height: 300px !important;
+}
+
+@media (max-width: 768px) {
+  .chart-wrapper {
+    min-height: 280px;
+    padding: 0.625rem;
+  }
+  
+  .chart-wrapper > div {
+    height: 280px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .chart-wrapper {
+    min-height: 240px;
+    padding: 0.5rem;
+  }
+  
+  .chart-wrapper > div {
+    height: 240px !important;
+  }
+}
+
+.chart-no-data {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: #6B7280;
+  font-size: 0.875rem;
+  background-color: #F9FAFB;
+  border-radius: 0.5rem;
+  border: 1px dashed #E5E7EB;
+}
+
+/* Recharts Component Styles - Variables para estilos inline */
+:root {
+  --chart-axis-stroke: #6b7280;
+  --chart-axis-font-size: 12px;
+  --chart-line-stroke: #8532d9;
+  --chart-line-stroke-width: 2;
+  --chart-grid-stroke: #e5e7eb;
+  --chart-tooltip-bg: #fff;
+  --chart-tooltip-border: #e5e7eb;
+  --chart-tooltip-radius: 8px;
+  --chart-margin-top: 20px;
+  --chart-margin-right: 50px;
+  --chart-margin-left: 50px;
+  --chart-margin-bottom: 20px;
+  --chart-grid-stroke-dasharray: 3 3;
+  --chart-active-dot-radius: 6;
+  --chart-active-dot-stroke-width: 2;
+  --chart-active-dot-stroke: #fff;
+  --chart-tooltip-padding: 8px 12px;
+  --chart-tooltip-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --chart-summary-icon-size: 20px;
+}
+
+/* Loading State */
+.chart-loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 24rem;
+}
+
+.chart-loading-content {
+  text-align: center;
+}
+
+.chart-spinner {
+  animation: spin 1s linear infinite;
+  border-radius: 9999px;
+  height: 3rem;
+  width: 3rem;
+  border-width: 2px;
+  border-bottom-color: #2563eb;
+  border-top-color: transparent;
+  border-left-color: transparent;
+  border-right-color: transparent;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.chart-loading-text {
+  color: #4b5563;
+}
+
+/* Error State */
+.chart-error-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 24rem;
+}
+
+.chart-error-content {
+  text-align: center;
+  padding: 1.5rem;
+  background-color: #fef2f2;
+  border-radius: 0.5rem;
+  border: 1px solid #fecaca;
+}
+
+.chart-error-title {
+  color: #dc2626;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.chart-error-message {
+  color: #ef4444;
+  font-size: 0.875rem;
+}
+
+/* Empty State */
+.chart-empty-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 24rem;
+}
+
+.chart-empty-content {
+  text-align: center;
+  padding: 1.5rem;
+  background-color: #f9fafb;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  max-width: 42rem;
+}
+
+.chart-empty-title {
+  color: #4b5563;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.chart-empty-info {
+  text-align: left;
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-top: 1rem;
+}
+
+.chart-empty-data {
+  margin-top: 1rem;
+}
+
+.chart-empty-data-pre {
+  background-color: #f3f4f6;
+  padding: 0.75rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  overflow: auto;
+  max-height: 12rem;
+  margin-top: 0.5rem;
+}
+
+.chart-empty-hint {
+  font-size: 0.75rem;
+  margin-top: 1rem;
+}
+
+/* Recharts Component Styles - Clases para aplicar estilos */
+.chart-summary-icon svg {
+  width: var(--chart-summary-icon-size);
+  height: var(--chart-summary-icon-size);
+  display: block;
+}
+
+/* Estilos para Recharts - Nota: Algunos estilos deben permanecer como props
+   debido a limitaciones de la librería, pero se usan variables CSS para mantener consistencia */
