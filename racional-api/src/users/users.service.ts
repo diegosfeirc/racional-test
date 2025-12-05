@@ -10,7 +10,7 @@ import { WalletsService } from '../wallets/wallets.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
-import { MovementResponseDto } from './dto/movement-response.dto';
+import { MovementResponseDto, MovementType } from './dto/movement-response.dto';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
@@ -154,7 +154,7 @@ export class UsersService {
     const transactionMovements: MovementResponseDto[] = transactions.map(
       (transaction) => ({
         id: transaction.id,
-        type: 'TRANSACTION' as const,
+        type: MovementType.TRANSACTION,
         date: transaction.date,
         description: transaction.description,
         amount: Number(transaction.amount),
@@ -164,7 +164,7 @@ export class UsersService {
 
     const orderMovements: MovementResponseDto[] = orders.map((order) => ({
       id: order.id,
-      type: 'ORDER' as const,
+      type: MovementType.ORDER,
       date: order.executedAt ?? order.createdAt,
       description: null,
       orderType: order.type,

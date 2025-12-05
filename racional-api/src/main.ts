@@ -1,9 +1,27 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  const config = new DocumentBuilder()
+    .setTitle('Racional API')
+    .setDescription('API para gestión de portafolios y órdenes de acciones')
+    .setVersion('1.0')
+    .addTag('app', 'Endpoints generales de la aplicación')
+    .addTag('users', 'Operaciones relacionadas con usuarios')
+    .addTag('stocks', 'Operaciones relacionadas con acciones')
+    .addTag('portfolios', 'Operaciones relacionadas con portafolios')
+    .addTag('orders', 'Operaciones relacionadas con órdenes')
+    .addTag('transactions', 'Operaciones relacionadas con transacciones')
+    .addTag('wallets', 'Operaciones relacionadas con billeteras')
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document);
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
