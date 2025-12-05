@@ -36,9 +36,15 @@ export const useInvestmentChart = (
           return null;
         }
 
+        const portfolioValue: number = point.portfolioValue || 0;
+        const contributions: number = point.contributions || 0;
+        const profit: number = portfolioValue - contributions;
+
         return {
           date: format(new Date(timestamp), 'dd/MM/yyyy'),
-          value: point.portfolioValue || 0,
+          value: portfolioValue,
+          contributions: contributions,
+          profit: profit,
           timestamp,
         };
       })
@@ -80,39 +86,6 @@ export const useInvestmentChart = (
     
     return allChartData.filter(point => point.timestamp >= startTimestamp);
   }, [allChartData, selectedTimeframe]);
-
-
-  // Calcular regresión lineal y combinar con datos filtrados
-  const chartDataWithRegression = useMemo((): ChartDataPoint[] => {
-    if (filteredChartData.length === 0) return [];
-    
-    if (filteredChartData.length < 2) {
-      return filteredChartData.map(point => ({
-        ...point,
-        regressionValue: point.value,
-      }));
-    }
-
-    const n = filteredChartData.length;
-    const xValues = Array.from({ length: n }, (_, i) => i);
-    const yValues = filteredChartData.map(point => point.value);
-    
-    const sumX = xValues.reduce((sum, x) => sum + x, 0);
-    const sumY = yValues.reduce((sum, y) => sum + y, 0);
-    const sumXY = xValues.reduce((sum, x, i) => sum + x * yValues[i], 0);
-    const sumXX = xValues.reduce((sum, x) => sum + x * x, 0);
-    
-    const denominator = n * sumXX - sumX * sumX;
-    const m = denominator !== 0 
-      ? (n * sumXY - sumX * sumY) / denominator 
-      : 0;
-    const b = (sumY - m * sumX) / n;
-    
-    return filteredChartData.map((point, index) => ({
-      ...point,
-      regressionValue: m * index + b,
-    }));
-  }, [filteredChartData]);
 
 
   // Calcular qué ticks mostrar según el timeframe
@@ -213,20 +186,29 @@ export const useInvestmentChart = (
   const currentValue: number = filteredChartData.length > 0 
     ? filteredChartData[filteredChartData.length - 1]?.value || 0 
     : 0;
+  const currentContributions: number = filteredChartData.length > 0 
+    ? filteredChartData[filteredChartData.length - 1]?.contributions || 0 
+    : 0;
   const previousValue: number = filteredChartData.length > 1 
     ? filteredChartData[filteredChartData.length - 2]?.value || 0 
     : currentValue;
-  const initialValue: number = filteredChartData.length > 0 
-    ? filteredChartData[0]?.value || 0 
-    : 0;
-  const totalGain: number = currentValue - initialValue;
-  const returnPercent: string = initialValue !== 0 
-    ? ((totalGain / initialValue) * 100).toFixed(2) 
+  const previousContributions: number = filteredChartData.length > 1 
+    ? filteredChartData[filteredChartData.length - 2]?.contributions || 0 
+    : currentContributions;
+  
+  // Ganancias reales = portfolioValue - contributions
+  const totalGain: number = currentValue - currentContributions;
+  
+  // Retorno basado en contributions (retorno sobre inversión)
+  const returnPercent: string = currentContributions !== 0 
+    ? ((totalGain / currentContributions) * 100).toFixed(2) 
     : '0.00';
   
-  const recentChange: number = currentValue - previousValue;
-  const recentChangePercent: string = previousValue !== 0 
-    ? ((recentChange / previousValue) * 100).toFixed(2) 
+  // Cambio reciente en ganancias (no en valor absoluto)
+  const previousGain: number = previousValue - previousContributions;
+  const recentChange: number = totalGain - previousGain;
+  const recentChangePercent: string = previousGain !== 0 
+    ? ((recentChange / Math.abs(previousGain)) * 100).toFixed(2) 
     : '0.00';
 
   const timeframes: { value: Timeframe; label: string }[] = [
@@ -241,7 +223,7 @@ export const useInvestmentChart = (
   return {
     loading,
     error,
-    filteredChartData: chartDataWithRegression,
+    filteredChartData,
     xAxisTicks,
     currentValue,
     totalGain,

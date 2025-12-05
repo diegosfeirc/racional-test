@@ -26,8 +26,9 @@ export interface InvestmentDataPoint {
 
 export interface ChartDataPoint {
   date: string;
-  value: number;
+  value: number; // portfolioValue
+  contributions: number; // Costo base / Principal
+  profit: number; // value - contributions (para cálculos y visualización)
   timestamp: number;
-  regressionValue?: number;
 }
 

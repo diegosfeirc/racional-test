@@ -1,6 +1,7 @@
 import {
-  LineChart,
+  ComposedChart,
   Line,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -8,6 +9,15 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { useInvestmentChart } from '../../hooks/investment/useInvestmentChart';
+import {
+  calculateProfit,
+  formatCurrency,
+  formatYAxisTick,
+  filterUniquePayloads,
+  getDataKeyLabel,
+  getPayloadValue,
+  formatProfit,
+} from '../../utils/investmentChart';
 import './styles.css';
 import { CHART_STYLES } from './chart.styles';
 
@@ -64,24 +74,18 @@ const InvestmentChart = () => {
               </svg>
             </div>
             <div className="chart-summary-content">
-              <p className="chart-summary-label">Total inversiones</p>
+              <p className="chart-summary-label">Total Inversiones</p>
               <p className="chart-summary-value">
-                ${currentValue.toLocaleString('es-CL', {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
+                ${formatCurrency(currentValue)}
               </p>
             </div>
           </div>
           
           <div className="chart-summary-item">
             <div className="chart-summary-content">
-              <p className="chart-summary-label">Ganancias/Pérdidas</p>
+              <p className="chart-summary-label">Ganancias</p>
               <p className={`chart-summary-value ${totalGain >= 0 ? 'positive' : 'negative'}`}>
-                {totalGain >= 0 ? '+' : ''}${totalGain.toLocaleString('es-CL', {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
+                {totalGain >= 0 ? '+' : ''}${formatCurrency(totalGain)}
               </p>
             </div>
           </div>
@@ -90,10 +94,7 @@ const InvestmentChart = () => {
             <div className="chart-summary-content">
               <p className="chart-summary-label">Variación reciente</p>
               <p className={`chart-summary-value ${recentChange >= 0 ? 'positive' : 'negative'}`}>
-                {recentChange >= 0 ? '+' : ''}${recentChange.toLocaleString('es-CL', {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })} ({recentChange >= 0 ? '+' : ''}{recentChangePercent}%)
+                {recentChange >= 0 ? '+' : ''}${formatCurrency(recentChange)} ({recentChange >= 0 ? '+' : ''}{recentChangePercent}%)
               </p>
             </div>
           </div>
@@ -130,10 +131,16 @@ const InvestmentChart = () => {
         <div className="chart-wrapper">
           {filteredChartData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart
+              <ComposedChart
                 data={filteredChartData}
                 margin={CHART_STYLES.margin}
               >
+                <defs>
+                  <linearGradient id={CHART_STYLES.area.gradientId} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={CHART_STYLES.area.gradientColors.start} />
+                    <stop offset="100%" stopColor={CHART_STYLES.area.gradientColors.end} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid
                   strokeDasharray={CHART_STYLES.grid.strokeDasharray}
                   stroke={CHART_STYLES.grid.stroke}
@@ -142,7 +149,7 @@ const InvestmentChart = () => {
                 <XAxis
                   dataKey="date"
                   stroke={CHART_STYLES.axis.stroke}
-                  style={{ fontSize: CHART_STYLES.axis.fontSize }}
+                  style={CHART_STYLES.axis.style}
                   tick={{ fill: CHART_STYLES.axis.stroke }}
                   ticks={selectedTimeframe === '24h' ? [] : (xAxisTicks.length > 0 ? xAxisTicks : undefined)}
                   tickFormatter={formatXAxisTick}
@@ -151,29 +158,70 @@ const InvestmentChart = () => {
                 />
                 <YAxis
                   stroke={CHART_STYLES.axis.stroke}
-                  style={{ fontSize: CHART_STYLES.axis.fontSize }}
+                  style={CHART_STYLES.axis.style}
                   tick={{ fill: CHART_STYLES.axis.stroke }}
-                  tickFormatter={(value: number): string => {
-                    if (value >= 1000) {
-                      return `$${(value / 1000).toFixed(1)}k`;
-                    }
-                    return `$${value.toLocaleString('es-CL', {
-                      minimumFractionDigits: 0,
-                      maximumFractionDigits: 0,
-                    })}`;
-                  }}
+                  tickFormatter={formatYAxisTick}
                   domain={['auto', 'auto']}
                 />
                 <Tooltip
                   contentStyle={CHART_STYLES.tooltip}
-                  formatter={(value: number): [string, string] => [
-                    `$${value.toLocaleString('es-CL', {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}`,
-                    'Total portafolio',
-                  ]}
-                  labelFormatter={(label: string) => label}
+                  content={({ active, payload, label }) => {
+                    if (!active || !payload || payload.length === 0) {
+                      return null;
+                    }
+
+                    const uniquePayloads = filterUniquePayloads(payload);
+                    const portfolioValue = getPayloadValue(uniquePayloads, 'value');
+                    const contributions = getPayloadValue(uniquePayloads, 'contributions');
+                    const profit = calculateProfit(portfolioValue, contributions);
+
+                    return (
+                      <div className="chart-tooltip">
+                        <p className="chart-tooltip-label">{label}</p>
+                        {uniquePayloads.map((entry, index) => {
+                          if (!entry.value || typeof entry.value !== 'number') return null;
+                          
+                          const value = entry.value as number;
+                          const name = getDataKeyLabel(entry.dataKey);
+                          
+                          return (
+                            <p 
+                              key={index} 
+                              className="chart-tooltip-entry"
+                              style={{ color: entry.color }}
+                            >
+                              <strong>{name}:</strong> ${formatCurrency(value)}
+                            </p>
+                          );
+                        })}
+                        {profit !== null && (
+                          <p 
+                            className="chart-tooltip-profit"
+                            style={{ color: formatProfit(profit).color }}
+                          >
+                            <strong>{formatProfit(profit).label}:</strong>{' '}
+                            {formatProfit(profit).formattedValue}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="value"
+                  stroke="none"
+                  fill={`url(#${CHART_STYLES.area.gradientId})`}
+                  fillOpacity={CHART_STYLES.area.fillOpacity}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="contributions"
+                  stroke={CHART_STYLES.contributionsLine.stroke}
+                  strokeWidth={CHART_STYLES.contributionsLine.strokeWidth}
+                  dot={false}
+                  activeDot={CHART_STYLES.contributionsActiveDot}
+                  connectNulls={false}
                 />
                 <Line
                   type="monotone"
@@ -184,16 +232,7 @@ const InvestmentChart = () => {
                   activeDot={CHART_STYLES.activeDot}
                   connectNulls={false}
                 />
-                <Line
-                  type="linear"
-                  dataKey="regressionValue"
-                  stroke={CHART_STYLES.regressionLine.stroke}
-                  strokeWidth={CHART_STYLES.regressionLine.strokeWidth}
-                  dot={false}
-                  strokeDasharray={CHART_STYLES.regressionLine.strokeDasharray}
-                  connectNulls={false}
-                />
-              </LineChart>
+              </ComposedChart>
             </ResponsiveContainer>
           ) : (
             <div className="chart-no-data">
