@@ -8,6 +8,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderResponseDto } from './dto/order-response.dto';
 import { Prisma, OrderType, OrderStatus } from '@prisma/client';
+import { OrderEntity, OrderWithRelations } from '../common/types/order.types';
 
 @Injectable()
 export class OrdersService {
@@ -265,18 +266,9 @@ export class OrdersService {
     }
   }
 
-  private mapToResponseDto(order: {
-    id: string;
-    userId: string;
-    stockId: string;
-    type: OrderType;
-    quantity: number;
-    unitPrice: Prisma.Decimal;
-    total: Prisma.Decimal;
-    status: OrderStatus;
-    createdAt: Date;
-    executedAt: Date | null;
-  }): OrderResponseDto {
+  private mapToResponseDto(
+    order: OrderEntity | OrderWithRelations,
+  ): OrderResponseDto {
     return {
       id: order.id,
       userId: order.userId,

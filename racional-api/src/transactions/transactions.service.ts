@@ -7,7 +7,8 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { TransactionResponseDto } from './dto/transaction-response.dto';
-import { Prisma, TransactionType } from '@prisma/client';
+import { TransactionType } from '@prisma/client';
+import { TransactionEntity } from '../common/types/transaction.types';
 
 @Injectable()
 export class TransactionsService {
@@ -121,15 +122,9 @@ export class TransactionsService {
     return this.mapToResponseDto(transaction);
   }
 
-  private mapToResponseDto(transaction: {
-    id: string;
-    userId: string;
-    type: TransactionType;
-    amount: Prisma.Decimal;
-    date: Date;
-    description: string | null;
-    createdAt: Date;
-  }): TransactionResponseDto {
+  private mapToResponseDto(
+    transaction: TransactionEntity,
+  ): TransactionResponseDto {
     return {
       id: transaction.id,
       userId: transaction.userId,

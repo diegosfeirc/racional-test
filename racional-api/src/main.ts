@@ -1,12 +1,16 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { AppConfig } from './config/interfaces/config.interface';
 
-async function bootstrap() {
+async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
+  const configService = app.get<ConfigService<AppConfig>>(ConfigService);
 
-  const config = new DocumentBuilder()
+  const swaggerConfig = new DocumentBuilder()
     .setTitle('Racional API')
     .setDescription('API para gestión de portafolios y órdenes de acciones')
     .setVersion('1.0')
@@ -19,7 +23,7 @@ async function bootstrap() {
     .addTag('wallets', 'Operaciones relacionadas con billeteras')
     .build();
 
-  const document = SwaggerModule.createDocument(app, config);
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('docs', app, document);
 
   app.useGlobalPipes(
@@ -29,9 +33,22 @@ async function bootstrap() {
       transform: true,
     }),
   );
-  await app.listen(process.env.PORT ?? 3000);
+
+  app.useGlobalFilters(new HttpExceptionFilter());
+
+  const portConfig = configService.get<AppConfig['port']>('port');
+  if (typeof portConfig !== 'number' || portConfig <= 0) {
+    throw new Error(
+      'Invalid port configuration. Port must be a positive number.',
+    );
+  }
+  await app.listen(portConfig);
+
+  console.log(`Application is running on: http://localhost:${portConfig}`);
+  console.log(`Swagger documentation: http://localhost:${portConfig}/docs`);
 }
-bootstrap().catch((error) => {
+
+bootstrap().catch((error: unknown) => {
   console.error('Error starting the application:', error);
   process.exit(1);
 });

@@ -12,6 +12,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import { MovementResponseDto, MovementType } from './dto/movement-response.dto';
 import { Prisma } from '@prisma/client';
+import { UserEntity } from '../common/types/user.types';
 
 @Injectable()
 export class UsersService {
@@ -182,14 +183,7 @@ export class UsersService {
     return allMovements.slice(0, limit);
   }
 
-  private mapToResponseDto(user: {
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    createdAt: Date;
-    updatedAt: Date;
-  }): UserResponseDto {
+  private mapToResponseDto(user: UserEntity): UserResponseDto {
     return {
       id: user.id,
       email: user.email,
