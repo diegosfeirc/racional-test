@@ -27,9 +27,8 @@ const NavBar: React.FC = () => {
     },
   ];
 
-  const handleSectionClick = (e: React.MouseEvent<HTMLButtonElement>): void => {
-    // Por ahora no hace nada, como solicitaste
-    e.preventDefault();
+  const handleSectionClick = (path: string) => (): void => {
+    navigate(path);
   };
 
   const handleLogoClick = (): void => {
@@ -48,7 +47,7 @@ const NavBar: React.FC = () => {
             <button
               key={section.path}
               className="navbar-section-button"
-              onClick={handleSectionClick}
+              onClick={handleSectionClick(section.path)}
               type="button"
               aria-label={section.label}
             >
