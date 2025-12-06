@@ -6,6 +6,7 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
+  Legend,
   ResponsiveContainer,
 } from 'recharts';
 import { useInvestmentChart } from '../../hooks/investment/useInvestmentChart';
@@ -21,6 +22,11 @@ import {
 import './styles.css';
 import { CHART_STYLES } from './chart.styles';
 
+interface LegendEntry {
+  value?: string;
+  color?: string;
+}
+
 const InvestmentChart = () => {
   const {
     loading,
@@ -29,8 +35,7 @@ const InvestmentChart = () => {
     xAxisTicks,
     currentValue,
     totalGain,
-    recentChange,
-    recentChangePercent,
+    currentContributions,
     returnPercent,
     selectedTimeframe,
     setSelectedTimeframe,
@@ -68,8 +73,23 @@ const InvestmentChart = () => {
           <div className="chart-summary-item">
             <div className="chart-summary-content">
               <p className="chart-summary-label">Total Inversiones</p>
-              <p className="chart-summary-value">
+              <p 
+                className="chart-summary-value"
+                style={{ color: CHART_STYLES.line.stroke }}
+              >
                 ${formatCurrency(currentValue)}
+              </p>
+            </div>
+          </div>
+          
+          <div className="chart-summary-item">
+            <div className="chart-summary-content">
+              <p className="chart-summary-label">Contribuciones totales</p>
+              <p 
+                className="chart-summary-value"
+                style={{ color: CHART_STYLES.contributionsLine.stroke }}
+              >
+                ${formatCurrency(currentContributions)}
               </p>
             </div>
           </div>
@@ -79,15 +99,6 @@ const InvestmentChart = () => {
               <p className="chart-summary-label">Ganancias</p>
               <p className={`chart-summary-value ${totalGain >= 0 ? 'positive' : 'negative'}`}>
                 {totalGain >= 0 ? '+' : ''}${formatCurrency(totalGain)}
-              </p>
-            </div>
-          </div>
-          
-          <div className="chart-summary-item">
-            <div className="chart-summary-content">
-              <p className="chart-summary-label">Variación reciente</p>
-              <p className={`chart-summary-value ${recentChange >= 0 ? 'positive' : 'negative'}`}>
-                {recentChange >= 0 ? '+' : ''}${formatCurrency(recentChange)} ({recentChange >= 0 ? '+' : ''}{recentChangePercent}%)
               </p>
             </div>
           </div>
@@ -145,7 +156,15 @@ const InvestmentChart = () => {
                   ticks={selectedTimeframe === '24h' ? [] : (xAxisTicks.length > 0 ? xAxisTicks : undefined)}
                   tickFormatter={formatXAxisTick}
                   interval={selectedTimeframe === '24h' ? 'preserveStartEnd' : 0}
-                  minTickGap={selectedTimeframe === '24h' ? 40 : selectedTimeframe === '1M' ? 50 : 30}
+                  minTickGap={
+                    selectedTimeframe === '24h' 
+                      ? 40 
+                      : selectedTimeframe === '1M' || selectedTimeframe === 'MTD'
+                      ? 50 
+                      : selectedTimeframe === 'YTD'
+                      ? 60
+                      : 30
+                  }
                 />
                 <YAxis
                   stroke={CHART_STYLES.axis.stroke}
@@ -204,24 +223,60 @@ const InvestmentChart = () => {
                   stroke="none"
                   fill={`url(#${CHART_STYLES.area.gradientId})`}
                   fillOpacity={CHART_STYLES.area.fillOpacity}
+                  legendType="none"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  name="Total Inversiones"
+                  stroke={CHART_STYLES.line.stroke}
+                  strokeWidth={CHART_STYLES.line.strokeWidth}
+                  dot={false}
+                  activeDot={CHART_STYLES.activeDot}
+                  connectNulls={false}
                 />
                 <Line
                   type="monotone"
                   dataKey="contributions"
+                  name="Total Contribuciones"
                   stroke={CHART_STYLES.contributionsLine.stroke}
                   strokeWidth={CHART_STYLES.contributionsLine.strokeWidth}
                   dot={false}
                   activeDot={CHART_STYLES.contributionsActiveDot}
                   connectNulls={false}
                 />
-                <Line
-                  type="monotone"
-                  dataKey="value"
-                  stroke={CHART_STYLES.line.stroke}
-                  strokeWidth={CHART_STYLES.line.strokeWidth}
-                  dot={false}
-                  activeDot={CHART_STYLES.activeDot}
-                  connectNulls={false}
+                <Legend 
+                  wrapperStyle={{ paddingTop: '1rem' }}
+                  iconType="line"
+                  content={({ payload }) => {
+                    if (!payload) return null;
+                    
+                    const investments = (payload as LegendEntry[]).find(e => e.value === 'Total Inversiones');
+                    const contributions = (payload as LegendEntry[]).find(e => e.value === 'Total Contribuciones');
+                    
+                    return (
+                      <ul className="chart-legend-list">
+                        {investments && (
+                          <li className="chart-legend-item">
+                            <svg width="14" height="14" className="chart-legend-icon">
+                              <line x1="0" y1="7" x2="14" y2="7" stroke={investments.color} strokeWidth="2" />
+                            </svg>
+                            <span className="chart-legend-text" style={{ color: CHART_STYLES.line.stroke }}>
+                              {investments.value}
+                            </span>
+                          </li>
+                        )}
+                        {contributions && (
+                          <li className="chart-legend-item">
+                            <svg width="14" height="14" className="chart-legend-icon">
+                              <line x1="0" y1="7" x2="14" y2="7" stroke={contributions.color} strokeWidth="2" />
+                            </svg>
+                            <span className="chart-legend-text">{contributions.value}</span>
+                          </li>
+                        )}
+                      </ul>
+                    );
+                  }}
                 />
               </ComposedChart>
             </ResponsiveContainer>

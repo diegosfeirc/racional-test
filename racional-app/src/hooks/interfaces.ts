@@ -1,5 +1,4 @@
 import type { ChartDataPoint, InvestmentEvolution } from "../types/investment.types";
-import type { DailyReturnDataPoint, RiskStatistics } from "../types/risk.types";
 import type { Timeframe } from "./investment/useInvestmentChart";
 
 // INVESTMENT CHART
@@ -13,8 +12,7 @@ export interface UseInvestmentChartReturn {
     // Statistics
     currentValue: number;
     totalGain: number;
-    recentChange: number;
-    recentChangePercent: string;
+    currentContributions: number;
     returnPercent: string;
     
     // Timeframe
@@ -31,24 +29,4 @@ export interface UseInvestmentEvolutionReturn {
     data: InvestmentEvolution | null;
     loading: boolean;
     error: Error | null;
-}
-
-// RISK CHART
-export interface UseRiskChartReturn {
-    // Data
-    loading: boolean;
-    error: Error | null;
-    filteredData: DailyReturnDataPoint[];
-    xAxisTicks: string[];
-    
-    // Statistics
-    statistics: RiskStatistics;
-    
-    // Timeframe
-    selectedTimeframe: Timeframe;
-    setSelectedTimeframe: (timeframe: Timeframe) => void;
-    timeframes: { value: Timeframe; label: string }[];
-    
-    // Formatters
-    formatXAxisTick: (value: string) => string;
 }

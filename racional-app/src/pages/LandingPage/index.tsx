@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom';
-import logo from '../../assets/racional-black.svg';
 import './styles.css';
 
 function LandingPage() {
@@ -7,10 +6,6 @@ function LandingPage() {
 
   return (
     <div className="landing-container">
-      <div className="landing-header">
-        <img src={logo} alt="Racional" className="landing-logo" />
-      </div>
-      
       <div className="landing-content">
         <div className="landing-text-section">
           <h1 className="landing-title">

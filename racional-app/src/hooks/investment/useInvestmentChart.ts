@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { format, getDate } from 'date-fns';
+import { format, getDate, startOfYear, startOfMonth } from 'date-fns';
 import { useInvestmentEvolution } from './useInvestmentEvolution';
 import type { ChartDataPoint, FirestoreDataPoint } from '../../types/investment.types';
 import type { UseInvestmentChartReturn } from '../interfaces';
@@ -10,7 +10,27 @@ export type Timeframe =
   | '1M' 
   | '3M' 
   | '6M' 
+  | 'MTD'
+  | 'YTD'
   | 'all';
+
+/**
+ * Calcula el timestamp del inicio del año actual (1 de enero a las 00:00:00)
+ * @param referenceDate - Fecha de referencia (por defecto: fecha actual)
+ * @returns Timestamp en milisegundos del inicio del año
+ */
+const getYearStartTimestamp = (referenceDate: Date = new Date()): number => {
+  return startOfYear(referenceDate).getTime();
+};
+
+/**
+ * Calcula el timestamp del inicio del mes actual (día 1 a las 00:00:00)
+ * @param referenceDate - Fecha de referencia (por defecto: fecha actual)
+ * @returns Timestamp en milisegundos del inicio del mes
+ */
+const getMonthStartTimestamp = (referenceDate: Date = new Date()): number => {
+  return startOfMonth(referenceDate).getTime();
+};
 
 export const useInvestmentChart = (
   userId: string = 'user1'
@@ -63,6 +83,7 @@ export const useInvestmentChart = (
     if (!lastTimestamp) return [];
     
     let startTimestamp: number;
+    const lastDate = new Date(lastTimestamp);
     
     switch (selectedTimeframe) {
       case '24h':
@@ -79,6 +100,14 @@ export const useInvestmentChart = (
         break;
       case '6M':
         startTimestamp = lastTimestamp - (180 * 24 * 60 * 60 * 1000); // ~180 días (6 meses)
+        break;
+      case 'MTD':
+        // Mes hasta la fecha: desde el inicio del mes actual hasta hoy
+        startTimestamp = getMonthStartTimestamp(lastDate);
+        break;
+      case 'YTD':
+        // Año hasta la fecha: desde el inicio del año actual hasta hoy
+        startTimestamp = getYearStartTimestamp(lastDate);
         break;
       default:
         return allChartData;
@@ -109,6 +138,26 @@ export const useInvestmentChart = (
           if (!seenMonths.has(monthKey)) {
             seenMonths.add(monthKey);
             ticks.push(point.date);
+          }
+          break;
+
+        case 'YTD':
+          // Para YTD, mostrar el primer día de cada mes
+          if (day === 1 && !seenMonths.has(monthKey)) {
+            seenMonths.add(monthKey);
+            ticks.push(point.date);
+          }
+          break;
+
+        case 'MTD':
+          // Para MTD, mostrar cada 3-4 días aproximadamente
+          if (dayKey !== lastDayKey) {
+            dayCount++;
+            if (dayCount % 3 === 1 && !seenDays.has(dayKey)) {
+              seenDays.add(dayKey);
+              ticks.push(point.date);
+            }
+            lastDayKey = dayKey;
           }
           break;
 
@@ -163,6 +212,14 @@ export const useInvestmentChart = (
         case 'all':
           return monthNames[month - 1];
 
+        case 'YTD':
+          // Para YTD, mostrar mes y año (ej: "Ene 2024")
+          return `${monthNames[month - 1]} ${parts[2]}`;
+
+        case 'MTD':
+          // Para MTD, mostrar día y mes (ej: "15 Ene")
+          return `${day} ${monthNames[month - 1]}`;
+
         case '6M':
         case '3M':
           return `${day} ${monthNames[month - 1]}`;
@@ -189,12 +246,6 @@ export const useInvestmentChart = (
   const currentContributions: number = filteredChartData.length > 0 
     ? filteredChartData[filteredChartData.length - 1]?.contributions || 0 
     : 0;
-  const previousValue: number = filteredChartData.length > 1 
-    ? filteredChartData[filteredChartData.length - 2]?.value || 0 
-    : currentValue;
-  const previousContributions: number = filteredChartData.length > 1 
-    ? filteredChartData[filteredChartData.length - 2]?.contributions || 0 
-    : currentContributions;
   
   // Ganancias reales = portfolioValue - contributions
   const totalGain: number = currentValue - currentContributions;
@@ -203,20 +254,15 @@ export const useInvestmentChart = (
   const returnPercent: string = currentContributions !== 0 
     ? ((totalGain / currentContributions) * 100).toFixed(2) 
     : '0.00';
-  
-  // Cambio reciente en ganancias (no en valor absoluto)
-  const previousGain: number = previousValue - previousContributions;
-  const recentChange: number = totalGain - previousGain;
-  const recentChangePercent: string = previousGain !== 0 
-    ? ((recentChange / Math.abs(previousGain)) * 100).toFixed(2) 
-    : '0.00';
 
   const timeframes: { value: Timeframe; label: string }[] = [
     { value: '24h', label: '24h' },
     { value: '7d', label: '7d' },
     { value: '1M', label: '1M' },
+    { value: 'MTD', label: 'MTD' },
     { value: '3M', label: '3M' },
     { value: '6M', label: '6M' },
+    { value: 'YTD', label: 'YTD' },
     { value: 'all', label: 'Todo' },
   ];
 
@@ -227,8 +273,7 @@ export const useInvestmentChart = (
     xAxisTicks,
     currentValue,
     totalGain,
-    recentChange,
-    recentChangePercent,
+    currentContributions,
     returnPercent,
     selectedTimeframe,
     setSelectedTimeframe,

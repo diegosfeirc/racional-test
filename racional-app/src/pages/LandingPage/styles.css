@@ -6,15 +6,6 @@
   flex-direction: column;
 }
 
-.landing-header {
-  margin-bottom: 2rem;
-}
-
-.landing-logo {
-  height: 40px;
-  width: auto;
-}
-
 .landing-content {
   display: flex;
   align-items: center;
@@ -122,10 +113,6 @@
 
   .landing-title {
     font-size: 2rem;
-  }
-
-  .landing-logo {
-    height: 32px;
   }
 }
 
