@@ -52,6 +52,20 @@
   margin-bottom: 1.5rem;
 }
 
+.chart-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 1rem 0;
+  line-height: 1.2;
+}
+
+@media (max-width: 640px) {
+  .chart-title {
+    font-size: 1.25rem;
+  }
+}
+
 .chart-summary {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));

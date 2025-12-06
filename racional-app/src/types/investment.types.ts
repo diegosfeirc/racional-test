@@ -31,4 +31,3 @@ export interface ChartDataPoint {
   profit: number; // value - contributions (para cálculos y visualización)
   timestamp: number;
 }
-

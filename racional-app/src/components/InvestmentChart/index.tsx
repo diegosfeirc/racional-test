@@ -63,16 +63,9 @@ const InvestmentChart = () => {
   return (
     <div className="chart-container">
       <div className="chart-header">
+        <h2 className="chart-title">Evolución del Portafolio</h2>
         <div className="chart-summary">
           <div className="chart-summary-item">
-            <div className="chart-summary-icon">
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4.5 16.5C4.5 16.5 6 18 8 18C10 18 11.5 16.5 11.5 16.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M6 13L12 2L18 13" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M6 13H18" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M12 13V22" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
             <div className="chart-summary-content">
               <p className="chart-summary-label">Total Inversiones</p>
               <p className="chart-summary-value">
@@ -111,8 +104,6 @@ const InvestmentChart = () => {
       </div>
 
       <div className="chart-evolution-section">
-        <h2 className="chart-evolution-title">Evolución</h2>
-
         {/* Selector de período */}
         <div className="chart-period-selector">
           {timeframes.map((timeframe) => (

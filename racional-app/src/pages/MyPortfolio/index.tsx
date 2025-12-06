@@ -1,4 +1,5 @@
 import InvestmentChart from '../../components/InvestmentChart/index';
+import RiskChart from '../../components/RiskChart/index';
 import logo from '../../assets/racional-black.svg';
 import './styles.css';
 
@@ -10,6 +11,7 @@ function MyPortfolio() {
       </div>
       <div className="portfolio-content">
         <InvestmentChart />
+        <RiskChart />
       </div>
     </div>
   );
