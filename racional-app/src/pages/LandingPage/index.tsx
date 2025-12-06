@@ -16,9 +16,9 @@ function LandingPage() {
           </p>
           <button 
             className="landing-button"
-            onClick={() => navigate('/my-portfolio')}
+            onClick={() => navigate('/evolution')}
           >
-            Ir a Mi Portafolio
+            Ver mi evolución
           </button>
         </div>
         

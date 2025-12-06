@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import logo from '../../assets/racional-black.svg';
@@ -11,10 +12,12 @@ interface NavBarSection {
 }
 
 const NavBar: React.FC = () => {
+  const navigate = useNavigate();
+  
   const sections: NavBarSection[] = [
     {
       label: 'Evolución',
-      path: '/my-portfolio',
+      path: '/evolution',
       icon: <TrendingUpIcon className="nav-icon" />,
     },
     {
@@ -29,10 +32,14 @@ const NavBar: React.FC = () => {
     e.preventDefault();
   };
 
+  const handleLogoClick = (): void => {
+    navigate('/');
+  };
+
   return (
     <nav className="navbar">
       <div className="navbar-container">
-        <div className="navbar-logo">
+        <div className="navbar-logo" onClick={handleLogoClick} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { handleLogoClick(); } }}>
           <img src={logo} alt="Racional" className="navbar-logo-img" />
         </div>
         

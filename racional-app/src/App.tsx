@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import NavBar from './components/NavBar';
 import LandingPage from './pages/LandingPage';
-import MyPortfolio from './pages/MyPortfolio';
+import Evolution from './pages/Evolution';
 import './App.css';
 
 function App() {
@@ -10,7 +10,7 @@ function App() {
       <NavBar />
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/my-portfolio" element={<MyPortfolio />} />
+        <Route path="/evolution" element={<Evolution />} />
       </Routes>
     </BrowserRouter>
   );

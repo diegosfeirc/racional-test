@@ -1,7 +1,7 @@
 import InvestmentChart from '../../components/InvestmentChart/index';
 import './styles.css';
 
-function MyPortfolio() {
+function Evolution() {
   return (
     <div className="portfolio-container">
       <div className="portfolio-content">
@@ -11,5 +11,5 @@ function MyPortfolio() {
   );
 }
 
-export default MyPortfolio;
+export default Evolution;
 
