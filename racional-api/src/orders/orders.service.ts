@@ -70,7 +70,7 @@ export class OrdersService {
           );
         }
 
-        const currentBalance = centsToDollars(wallet.balance);
+        const currentBalance = centsToDollars(Number(wallet.balance));
         if (currentBalance < totalInDollars) {
           this.logger.warn(
             `Insufficient balance for buy order. User: ${createOrderDto.userId}, Balance: ${currentBalance}, Required: ${totalInDollars}`,
@@ -101,8 +101,8 @@ export class OrdersService {
           stockId: createOrderDto.stockId,
           type: createOrderDto.type,
           quantity: createOrderDto.quantity,
-          unitPrice: unitPriceInCents,
-          total: totalInCents,
+          unitPrice: Number(unitPriceInCents),
+          total: Number(totalInCents),
           status: OrderStatus.EXECUTED,
           executedAt: new Date(),
         },
@@ -113,7 +113,7 @@ export class OrdersService {
           where: { userId: createOrderDto.userId },
           data: {
             balance: {
-              decrement: totalInCents,
+              decrement: Number(totalInCents),
             },
           },
         });
@@ -131,7 +131,7 @@ export class OrdersService {
           where: { userId: createOrderDto.userId },
           data: {
             balance: {
-              increment: totalInCents,
+              increment: Number(totalInCents),
             },
           },
         });
@@ -209,8 +209,11 @@ export class OrdersService {
 
     if (isBuy) {
       if (existingHolding) {
+        const averagePriceBigInt = BigInt(
+          Number(existingHolding.averageBuyPrice),
+        );
         const currentTotal =
-          existingHolding.averageBuyPrice * BigInt(existingHolding.quantity);
+          averagePriceBigInt * BigInt(existingHolding.quantity);
         const newTotal = unitPriceInCents * BigInt(quantity);
         const newQuantity = existingHolding.quantity + quantity;
         const newAveragePriceInCents =
@@ -225,7 +228,7 @@ export class OrdersService {
           },
           data: {
             quantity: newQuantity,
-            averageBuyPrice: newAveragePriceInCents,
+            averageBuyPrice: Number(newAveragePriceInCents),
           },
         });
       } else {
@@ -234,7 +237,7 @@ export class OrdersService {
             portfolioId: portfolioId,
             stockId: stockId,
             quantity: quantity,
-            averageBuyPrice: unitPriceInCents,
+            averageBuyPrice: Number(unitPriceInCents),
           },
         });
       }
@@ -279,8 +282,8 @@ export class OrdersService {
       stockId: order.stockId,
       type: order.type,
       quantity: order.quantity,
-      unitPrice: centsToDollars(order.unitPrice),
-      total: centsToDollars(order.total),
+      unitPrice: centsToDollars(Number(order.unitPrice)),
+      total: centsToDollars(Number(order.total)),
       status: order.status,
       createdAt: order.createdAt,
       executedAt: order.executedAt,

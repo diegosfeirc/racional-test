@@ -75,6 +75,15 @@ export class UsersService {
     }
   }
 
+  async findAll(limit: number = 10): Promise<UserResponseDto[]> {
+    const users = await this.prisma.user.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    });
+
+    return users.map((user) => this.mapToResponseDto(user));
+  }
+
   async findOne(id: string): Promise<UserResponseDto> {
     const user = await this.prisma.user.findUnique({
       where: { id },
@@ -159,7 +168,7 @@ export class UsersService {
         type: MovementType.TRANSACTION,
         date: transaction.date,
         description: transaction.description,
-        amount: centsToDollars(transaction.amount),
+        amount: centsToDollars(Number(transaction.amount)),
         transactionType: transaction.type,
       }),
     );
@@ -173,8 +182,8 @@ export class UsersService {
       stockSymbol: order.stock.symbol,
       stockName: order.stock.name,
       quantity: order.quantity,
-      unitPrice: centsToDollars(order.unitPrice),
-      total: centsToDollars(order.total),
+      unitPrice: centsToDollars(Number(order.unitPrice)),
+      total: centsToDollars(Number(order.total)),
     }));
 
     const allMovements = [...transactionMovements, ...orderMovements].sort(

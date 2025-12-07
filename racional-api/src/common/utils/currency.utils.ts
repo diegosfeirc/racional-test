@@ -36,4 +36,3 @@ export function centsToDollars(cents: bigint | number): number {
   const centsNumber = typeof cents === 'bigint' ? Number(cents) : cents;
   return centsNumber / 100;
 }
-

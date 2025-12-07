@@ -24,7 +24,7 @@ export class StocksService {
         data: {
           symbol: createStockDto.symbol,
           name: createStockDto.name,
-          price: priceInCents,
+          price: Number(priceInCents),
         },
       });
 
@@ -88,12 +88,12 @@ export class StocksService {
       const updateData: {
         symbol?: string;
         name?: string;
-        price?: bigint;
+        price?: number;
       } = {};
       if (updateStockDto.symbol) updateData.symbol = updateStockDto.symbol;
       if (updateStockDto.name) updateData.name = updateStockDto.name;
       if (updateStockDto.price !== undefined) {
-        updateData.price = dollarsToCents(updateStockDto.price);
+        updateData.price = Number(dollarsToCents(updateStockDto.price));
       }
 
       const stock = await this.prisma.stock.update({
@@ -128,7 +128,7 @@ export class StocksService {
     id: string;
     symbol: string;
     name: string;
-    price: bigint;
+    price: bigint | Prisma.Decimal;
     createdAt: Date;
     updatedAt: Date;
   }): StockResponseDto {
@@ -136,7 +136,7 @@ export class StocksService {
       id: stock.id,
       symbol: stock.symbol,
       name: stock.name,
-      price: centsToDollars(stock.price),
+      price: centsToDollars(Number(stock.price)),
       createdAt: stock.createdAt,
       updatedAt: stock.updatedAt,
     };

@@ -50,6 +50,30 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
+  @Get()
+  @ApiOperation({
+    summary: 'Obtener todos los usuarios',
+    description:
+      'Retorna una lista de todos los usuarios registrados en el sistema',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Número máximo de usuarios a retornar',
+    example: 10,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de usuarios',
+    type: [UserResponseDto],
+  })
+  async findAll(
+    @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
+  ): Promise<UserResponseDto[]> {
+    return this.usersService.findAll(limit ?? 10);
+  }
+
   @Get(':id')
   @ApiOperation({
     summary: 'Obtener un usuario por ID',

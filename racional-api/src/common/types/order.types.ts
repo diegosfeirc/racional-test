@@ -1,4 +1,4 @@
-import { OrderType, OrderStatus } from '@prisma/client';
+import { OrderType, OrderStatus, Prisma } from '@prisma/client';
 import { Stock } from '@prisma/client';
 
 export interface OrderEntity {
@@ -7,8 +7,8 @@ export interface OrderEntity {
   stockId: string;
   type: OrderType;
   quantity: number;
-  unitPrice: bigint;
-  total: bigint;
+  unitPrice: bigint | Prisma.Decimal;
+  total: bigint | Prisma.Decimal;
   status: OrderStatus;
   createdAt: Date;
   executedAt: Date | null;

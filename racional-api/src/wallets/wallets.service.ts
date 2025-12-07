@@ -80,7 +80,7 @@ export class WalletsService {
         where: { userId },
         data: {
           balance: {
-            increment: amountInCents,
+            increment: Number(amountInCents),
           },
         },
       });
@@ -123,7 +123,7 @@ export class WalletsService {
           );
         }
 
-        const currentBalance = centsToDollars(walletRecord.balance);
+        const currentBalance = centsToDollars(Number(walletRecord.balance));
         if (currentBalance < amount) {
           this.logger.warn(
             `Insufficient balance for user ${userId}. Balance: ${currentBalance}, Requested: ${amount}`,
@@ -136,7 +136,7 @@ export class WalletsService {
           where: { userId },
           data: {
             balance: {
-              decrement: amountInCents,
+              decrement: Number(amountInCents),
             },
           },
         });
@@ -175,14 +175,14 @@ export class WalletsService {
   private mapToResponseDto(wallet: {
     id: string;
     userId: string;
-    balance: bigint;
+    balance: bigint | Prisma.Decimal;
     createdAt: Date;
     updatedAt: Date;
   }): WalletResponseDto {
     return {
       id: wallet.id,
       userId: wallet.userId,
-      balance: centsToDollars(wallet.balance),
+      balance: centsToDollars(Number(wallet.balance)),
       createdAt: wallet.createdAt,
       updatedAt: wallet.updatedAt,
     };

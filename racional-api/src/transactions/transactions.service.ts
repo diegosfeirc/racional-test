@@ -44,7 +44,7 @@ export class TransactionsService {
           );
         }
 
-        const currentBalance = centsToDollars(wallet.balance);
+        const currentBalance = centsToDollars(Number(wallet.balance));
         if (currentBalance < createTransactionDto.amount) {
           this.logger.warn(
             `Insufficient balance for user ${createTransactionDto.userId}. Balance: ${currentBalance}, Requested: ${createTransactionDto.amount}`,
@@ -57,7 +57,7 @@ export class TransactionsService {
         data: {
           userId: createTransactionDto.userId,
           type: createTransactionDto.type,
-          amount: amountInCents,
+          amount: Number(amountInCents),
           date: new Date(createTransactionDto.date),
           ...(createTransactionDto.description && {
             description: createTransactionDto.description,
@@ -70,7 +70,7 @@ export class TransactionsService {
           where: { userId: createTransactionDto.userId },
           data: {
             balance: {
-              increment: amountInCents,
+              increment: Number(amountInCents),
             },
           },
         });
@@ -79,7 +79,7 @@ export class TransactionsService {
           where: { userId: createTransactionDto.userId },
           data: {
             balance: {
-              decrement: amountInCents,
+              decrement: Number(amountInCents),
             },
           },
         });
@@ -132,7 +132,7 @@ export class TransactionsService {
       id: transaction.id,
       userId: transaction.userId,
       type: transaction.type,
-      amount: centsToDollars(transaction.amount),
+      amount: centsToDollars(Number(transaction.amount)),
       date: transaction.date,
       description: transaction.description,
       createdAt: transaction.createdAt,
