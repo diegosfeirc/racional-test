@@ -220,6 +220,8 @@ La documentación oficial de todos los endpoints está disponible en la ruta `/d
 
 5. **Decimal para montos**: Se utiliza `Decimal` en lugar de `Float` para evitar problemas de precisión en cálculos financieros.
 
+**Diagrama ER**: Ver el diagrama de entidad-relación completo en [assets/racional_api_test.png](./assets/racional_api_test.png).
+
 ## Uso de IA
 
 ### Usos principales (Gemini 3 + Cursor)
