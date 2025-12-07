@@ -1,98 +1,217 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Racional API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API REST desarrollada con NestJS para la gestión de portafolios de inversión. Permite a los usuarios gestionar sus transacciones financieras, órdenes de compra/venta de acciones y portafolios de inversión.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Descripción
 
-## Description
+Racional API es una aplicación backend que proporciona endpoints para:
+- Gestión de usuarios y sus datos personales
+- Registro de depósitos y retiros de fondos
+- Creación y ejecución de órdenes de compra/venta de acciones
+- Administración de portafolios de inversión
+- Consulta de balances y movimientos
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Instrucciones para ejecutar la API
 
-## Project setup
+### Prerrequisitos
+
+- Docker y Docker Compose instalados
+- Make
+
+### Ejecutar con Make
+
+El comando `make up` es la forma más sencilla de levantar toda la aplicación:
 
 ```bash
-$ npm install
+make up
 ```
 
-## Compile and run the project
+**¿Qué hace `make up`?**
+
+Este comando:
+1. Verifica que Docker esté instalado y funcionando
+2. Construye las imágenes Docker necesarias
+3. Levanta todos los servicios en contenedores:
+   - **PostgreSQL**: Base de datos en el puerto 5432
+   - **API**: Servidor NestJS en el puerto 3000
+   - **Tests**: Ejecuta automáticamente los tests de integración
+4. Ejecuta automáticamente las migraciones de la base de datos
+5. Ejecuta el seed para poblar la base de datos con datos iniciales
+
+Una vez ejecutado, la API estará disponible en:
+- **API**: http://localhost:3000
+- **Documentación Swagger**: http://localhost:3000/docs
+- **PostgreSQL**: localhost:5432
+
+### Otros comandos útiles
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+make dev      # Levanta solo servicios de desarrollo (sin tests)
+make down     # Detiene todos los servicios
+make clean    # Detiene servicios y elimina volúmenes (limpia datos)
+make logs     # Muestra logs de todos los servicios
+make status   # Muestra el estado de los servicios
 ```
 
-## Run tests
+## Data Seed
 
-```bash
-# unit tests
-$ npm run test
+Al ejecutar `make up`, se crea automáticamente la siguiente data inicial:
 
-# e2e tests
-$ npm run test:e2e
+- **Usuario de prueba**:
+  - ID: `user-123`
+  - Email: `usuario@example.com`
+  - Nombre: Juan Pérez
 
-# test coverage
-$ npm run test:cov
+- **Wallet**:
+  - ID: `wallet-123`
+  - Balance inicial: $0
+
+- **Portafolio**:
+  - ID: `portfolio-123`
+  - Nombre: "Mi portafolio"
+  - Descripción: "Portafolio de inversión a largo plazo"
+
+- **Stocks disponibles**:
+  - **AAPL** (Apple Inc.) - $150.50 - ID: `stock-1`
+  - **TSLA** (Tesla Inc.) - $175.50 - ID: `stock-2`
+  - **META** (Meta Inc.) - $215.50 - ID: `stock-3`
+
+Esta data seed permite probar la API inmediatamente sin necesidad de crear datos manualmente.
+
+## Rutas de la API
+
+### 1. Registrar depósito/retiro de un usuario
+
+**Endpoint**: `POST /transactions`
+
+Registra una transacción de depósito o retiro para un usuario. Requiere:
+- `userId`: ID del usuario
+- `type`: Tipo de transacción (`DEPOSIT` o `WITHDRAWAL`)
+- `amount`: Monto de la transacción
+- `date`: Fecha de la transacción
+- `description`: Descripción opcional
+
+**Ejemplo**:
+```json
+{
+  "userId": "user-123",
+  "type": "DEPOSIT",
+  "amount": 1000.00,
+  "date": "2024-12-04T10:00:00Z",
+  "description": "Depósito inicial"
+}
 ```
 
-## Deployment
+### 2. Registrar orden de compra/venta de una Stock
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+**Endpoint**: `POST /orders`
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Registra una orden de compra o venta de acciones. Requiere:
+- `userId`: ID del usuario
+- `stockId`: ID de la acción
+- `portfolioId`: ID del portafolio
+- `type`: Tipo de orden (`BUY` o `SELL`)
+- `quantity`: Cantidad de acciones
+- `unitPrice`: Precio unitario
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+**Ejemplo**:
+```json
+{
+  "userId": "user-123",
+  "stockId": "stock-1",
+  "portfolioId": "portfolio-123",
+  "type": "BUY",
+  "quantity": 10,
+  "unitPrice": 150.50
+}
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### 3. Editar información personal del usuario
 
-## Resources
+**Endpoint**: `PATCH /users/:id`
 
-Check out a few resources that may come in handy when working with NestJS:
+Actualiza la información personal de un usuario. Permite actualizar:
+- `email`: Email del usuario
+- `firstName`: Nombre
+- `lastName`: Apellido
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+**Ejemplo**:
+```json
+{
+  "firstName": "Pedro",
+  "lastName": "González"
+}
+```
 
-## Support
+### 4. Editar información del portafolio del usuario
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+**Endpoint**: `PATCH /portfolios/:id`
 
-## Stay in touch
+Actualiza la información de un portafolio. Permite actualizar:
+- `name`: Nombre del portafolio
+- `description`: Descripción del portafolio
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+**Ejemplo**:
+```json
+{
+  "name": "Portafolio Agresivo",
+  "description": "Estrategia de alto riesgo"
+}
+```
 
-## License
+### 5. Consultar el total de un portafolio de un usuario
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+**Endpoint**: `GET /portfolios/:id/total`
+
+Retorna el valor total del portafolio calculado con los precios actuales de las acciones, incluyendo detalles de cada holding.
+
+**Respuesta**:
+```json
+{
+  "portfolioId": "portfolio-123",
+  "totalValue": 1505.00,
+  "holdings": [...]
+}
+```
+
+### 6. Consultar los últimos movimientos del usuario
+
+**Endpoint**: `GET /users/:id/movements?limit=10`
+
+Retorna los últimos movimientos del usuario (transacciones y órdenes), ordenados por fecha descendente. El parámetro `limit` es opcional (por defecto 10).
+
+**Ejemplo**: `GET /users/user-123/movements?limit=20`
+
+### Documentación completa
+
+La documentación oficial de todos los endpoints está disponible en la ruta `/docs` cuando la API está corriendo. Esta documentación interactiva (Swagger) permite:
+- Ver todos los endpoints disponibles
+- Probar los endpoints directamente desde el navegador
+- Ver los esquemas de request y response
+- Ver ejemplos de uso
+
+**Acceso**: http://localhost:3000/docs
+
+## Modelo de Datos
+
+### Entidades principales
+
+- **User**: Representa a un usuario del sistema con información personal (email, nombre, apellido)
+- **Wallet**: Billetera asociada a un usuario que almacena el balance disponible
+- **Portfolio**: Portafolio de inversión de un usuario. Un usuario puede tener múltiples portafolios
+- **Stock**: Acción disponible en el sistema con su símbolo, nombre y precio actual
+- **Transaction**: Registro de depósitos y retiros de fondos de un usuario
+- **Order**: Orden de compra o venta de acciones con estado (PENDING, EXECUTED, CANCELLED)
+- **PortfolioHolding**: Relación entre un portafolio y una acción, almacenando la cantidad y precio promedio de compra
+
+### Justificación de decisiones de diseño
+
+1. **Implementación de Wallet**: La wallet se implementó como una entidad separada para centralizar el balance disponible del usuario, permitiendo un control claro de los fondos líquidos antes de ser invertidos en portafolios. Esto facilita la gestión de depósitos y retiros, y permite validar que el usuario tenga fondos suficientes antes de ejecutar órdenes de compra.
+
+2. **Separación de Wallet y Portfolio**: Se separaron para permitir que un usuario tenga múltiples portafolios pero una sola billetera centralizada, facilitando la gestión de fondos.
+
+3. **Múltiples portafolios por usuario**: Se permite que un usuario tenga varios portafolios (único por nombre por usuario) para poder organizar inversiones por estrategia, objetivo o riesgo.
+
+4. **PortfolioHolding como entidad separada**: Permite rastrear el precio promedio de compra de cada acción en cada portafolio, facilitando el cálculo de ganancias/pérdidas.
+
+5. **Decimal para montos**: Se utiliza `Decimal` en lugar de `Float` para evitar problemas de precisión en cálculos financieros.
