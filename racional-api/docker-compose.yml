@@ -36,11 +36,10 @@ services:
       - |
         echo "Running migrations on test database..."
         export DATABASE_URL=postgresql://racional_test:racional_test_password@postgres-test:5432/racional_test_db?schema=public
-        sh ./scripts/migrate.sh
+        npx prisma migrate deploy
         echo "Running integration tests..."
-        sh ./scripts/run-tests.sh
+        npm run test:e2e
     volumes:
-      - ./scripts:/app/scripts:ro
       - ./test:/app/test:ro
     networks:
       - racional-network
@@ -84,13 +83,11 @@ services:
     command:
       - |
         echo "Running migrations..."
-        sh ./scripts/migrate.sh
+        npx prisma migrate deploy
         echo "Running seeds..."
-        sh ./scripts/seed.sh
+        npx prisma db seed
         echo "Starting API..."
         node dist/src/main.js
-    volumes:
-      - ./scripts:/app/scripts:ro
     networks:
       - racional-network
     restart: unless-stopped

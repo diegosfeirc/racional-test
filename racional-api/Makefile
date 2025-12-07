@@ -131,12 +131,12 @@ restart-api: check-docker ## Reinicia solo el servicio de la API
 
 migrate: check-docker ## Ejecuta migraciones manualmente (desde el contenedor)
 	@echo "$(YELLOW)🔄 Ejecutando migraciones...$(NC)"
-	@$(COMPOSE) -f $(COMPOSE_FILE) exec $(API_SERVICE) sh ./scripts/migrate.sh
+	@$(COMPOSE) -f $(COMPOSE_FILE) exec $(API_SERVICE) npx prisma migrate deploy
 	@echo "$(GREEN)✅ Migraciones completadas$(NC)"
 
 seed: check-docker ## Ejecuta seeds manualmente (desde el contenedor)
 	@echo "$(YELLOW)🌱 Ejecutando seeds...$(NC)"
-	@$(COMPOSE) -f $(COMPOSE_FILE) exec $(API_SERVICE) sh ./scripts/seed.sh
+	@$(COMPOSE) -f $(COMPOSE_FILE) exec $(API_SERVICE) npx prisma db seed
 	@echo "$(GREEN)✅ Seeds completados$(NC)"
 
 stop: check-docker ## Detiene servicios sin eliminarlos
