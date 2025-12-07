@@ -1,151 +1,137 @@
 .PHONY: help up down build rebuild logs logs-api test test-only dev clean ps shell-api shell-db restart restart-api migrate seed status check-docker
 
-# Variables
-COMPOSE := docker compose
-COMPOSE_FILE := docker-compose.yml
-API_SERVICE := api
-POSTGRES_SERVICE := postgres
-TEST_SERVICE := api-test
-
-# Colores para output
-GREEN := \033[0;32m
-YELLOW := \033[0;33m
-RED := \033[0;31m
-BLUE := \033[0;34m
-NC := \033[0m # No Color
-
 # Comando por defecto
 .DEFAULT_GOAL := help
 
 help: ## Muestra esta ayuda
-	@echo "$(BLUE)════════════════════════════════════════════════════════════$(NC)"
-	@echo "$(GREEN)  Racional API - Comandos disponibles$(NC)"
-	@echo "$(BLUE)════════════════════════════════════════════════════════════$(NC)"
+	@echo "\033[0;34m════════════════════════════════════════════════════════════\033[0m"
+	@echo "\033[0;32m  Racional API - Comandos disponibles\033[0m"
+	@echo "\033[0;34m════════════════════════════════════════════════════════════\033[0m"
 	@echo ""
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(GREEN)%-18s$(NC) %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[0;32m%-18s\033[0m %s\n", $$1, $$2}'
 	@echo ""
-	@echo "$(BLUE)Ejemplos:$(NC)"
-	@echo "  $(YELLOW)make up$(NC)          - Levanta la aplicación (API + PostgreSQL)"
-	@echo "  $(YELLOW)make dev$(NC)         - Modo desarrollo interactivo"
-	@echo "  $(YELLOW)make test$(NC)        - Ejecuta tests de integración"
+	@echo "\033[0;34mEjemplos:\033[0m"
+	@echo "  \033[0;33mmake up\033[0m          - Levanta la aplicación (API + PostgreSQL)"
+	@echo "  \033[0;33mmake dev\033[0m         - Modo desarrollo interactivo"
+	@echo "  \033[0;33mmake test\033[0m        - Ejecuta tests de integración"
 	@echo ""
 
 check-docker: ## Verifica que Docker esté instalado y funcionando
-	@echo "$(BLUE)Verificando Docker...$(NC)"
+	@echo "\033[0;34mVerificando Docker...\033[0m"
 	@command -v docker >/dev/null 2>&1 || { \
-		echo "$(RED)❌ Error: Docker no está instalado$(NC)"; \
+		echo "\033[0;31m❌ Error: Docker no está instalado\033[0m"; \
 		echo "   Instala Docker desde: https://docs.docker.com/get-docker/"; \
 		exit 1; \
 	}
 	@docker info >/dev/null 2>&1 || { \
-		echo "$(RED)❌ Error: Docker no está corriendo$(NC)"; \
+		echo "\033[0;31m❌ Error: Docker no está corriendo\033[0m"; \
 		echo "   Inicia Docker Desktop o el daemon de Docker"; \
 		exit 1; \
 	}
-	@$(COMPOSE) version >/dev/null 2>&1 || { \
-		echo "$(RED)❌ Error: Docker Compose no está disponible$(NC)"; \
+	@docker compose version >/dev/null 2>&1 || { \
+		echo "\033[0;31m❌ Error: Docker Compose no está disponible\033[0m"; \
 		exit 1; \
 	}
-	@echo "$(GREEN)✅ Docker está listo$(NC)"
+	@echo "\033[0;32m✅ Docker está listo\033[0m"
 
 build: check-docker ## Construye las imágenes Docker
-	@echo "$(YELLOW)🔨 Construyendo imágenes Docker...$(NC)"
-	@$(COMPOSE) -f $(COMPOSE_FILE) build
-	@echo "$(GREEN)✅ Imágenes construidas$(NC)"
+	@echo "\033[0;33m🔨 Construyendo imágenes Docker...\033[0m"
+	@docker compose -f docker-compose.yml build
+	@echo "\033[0;32m✅ Imágenes construidas\033[0m"
 
 rebuild: check-docker ## Reconstruye las imágenes desde cero (sin cache)
-	@echo "$(YELLOW)🔨 Reconstruyendo imágenes desde cero...$(NC)"
-	@$(COMPOSE) -f $(COMPOSE_FILE) build --no-cache
-	@echo "$(GREEN)✅ Imágenes reconstruidas$(NC)"
+	@echo "\033[0;33m🔨 Reconstruyendo imágenes desde cero...\033[0m"
+	@docker compose -f docker-compose.yml build --no-cache
+	@echo "\033[0;32m✅ Imágenes reconstruidas\033[0m"
 
 up: build ## Levanta solo los servicios de la aplicación (API + PostgreSQL)
-	@echo "$(GREEN)🚀 Levantando servicios de la aplicación...$(NC)"
-	@echo "$(BLUE)   Esto incluye: PostgreSQL y API$(NC)"
-	@$(COMPOSE) -f $(COMPOSE_FILE) up -d $(POSTGRES_SERVICE) $(API_SERVICE)
+	@echo "\033[0;32m🚀 Levantando servicios de la aplicación...\033[0m"
+	@echo "\033[0;34m   Esto incluye: PostgreSQL y API\033[0m"
+	@docker compose -f docker-compose.yml up -d postgres api
 
 dev: build ## Levanta solo servicios de desarrollo (sin tests)
-	@echo "$(GREEN)🚀 Levantando servicios de desarrollo...$(NC)"
-	@echo "$(BLUE)   API disponible en: http://localhost:3000$(NC)"
-	@echo "$(BLUE)   Swagger disponible en: http://localhost:3000/docs$(NC)"
-	@$(COMPOSE) -f $(COMPOSE_FILE) up $(POSTGRES_SERVICE) $(API_SERVICE)
+	@echo "\033[0;32m🚀 Levantando servicios de desarrollo...\033[0m"
+	@echo "\033[0;34m   API disponible en: http://localhost:3000\033[0m"
+	@echo "\033[0;34m   Swagger disponible en: http://localhost:3000/docs\033[0m"
+	@docker compose -f docker-compose.yml up postgres api
 
 down: check-docker ## Detiene todos los servicios
-	@echo "$(YELLOW)🛑 Deteniendo servicios...$(NC)"
-	@$(COMPOSE) -f $(COMPOSE_FILE) down
-	@echo "$(GREEN)✅ Servicios detenidos$(NC)"
+	@echo "\033[0;33m🛑 Deteniendo servicios...\033[0m"
+	@docker compose -f docker-compose.yml down
+	@echo "\033[0;32m✅ Servicios detenidos\033[0m"
 
 clean: check-docker ## Detiene servicios y elimina volúmenes (limpia datos)
-	@echo "$(RED)🧹 Limpiando todo (servicios + volúmenes)...$(NC)"
-	@echo "$(YELLOW)   ⚠️  Esto eliminará todos los datos de la base de datos$(NC)"
-	@$(COMPOSE) -f $(COMPOSE_FILE) down -v
-	@echo "$(GREEN)✅ Limpieza completada$(NC)"
+	@echo "\033[0;31m🧹 Limpiando todo (servicios + volúmenes)...\033[0m"
+	@echo "\033[0;33m   ⚠️  Esto eliminará todos los datos de la base de datos\033[0m"
+	@docker compose -f docker-compose.yml down -v
+	@echo "\033[0;32m✅ Limpieza completada\033[0m"
 
 logs: check-docker ## Muestra logs de todos los servicios (seguimiento en tiempo real)
-	@$(COMPOSE) -f $(COMPOSE_FILE) logs -f
+	@docker compose -f docker-compose.yml logs -f
 
 logs-api: check-docker ## Muestra logs solo de la API
-	@$(COMPOSE) -f $(COMPOSE_FILE) logs -f $(API_SERVICE)
+	@docker compose -f docker-compose.yml logs -f api
 
 test: build ## Ejecuta los tests de integración (independiente de la app)
-	@echo "$(GREEN)🧪 Ejecutando tests de integración...$(NC)"
-	@echo "$(BLUE)   Esto levanta: PostgreSQL de test y ejecuta los tests$(NC)"
-	@$(COMPOSE) -f $(COMPOSE_FILE) up --build $(TEST_SERVICE) --abort-on-container-exit
-	@$(COMPOSE) -f $(COMPOSE_FILE) rm -f $(TEST_SERVICE) postgres-test
+	@echo "\033[0;32m🧪 Ejecutando tests de integración...\033[0m"
+	@echo "\033[0;34m   Esto levanta: PostgreSQL de test y ejecuta los tests\033[0m"
+	@docker compose -f docker-compose.yml up --build api-test --abort-on-container-exit
+	@docker compose -f docker-compose.yml rm -f api-test postgres-test
 
 test-only: check-docker ## Ejecuta tests sin reconstruir (más rápido)
-	@echo "$(GREEN)🧪 Ejecutando tests (sin rebuild)...$(NC)"
-	@echo "$(BLUE)   Esto levanta: PostgreSQL de test y ejecuta los tests$(NC)"
-	@$(COMPOSE) -f $(COMPOSE_FILE) up $(TEST_SERVICE) --abort-on-container-exit
-	@$(COMPOSE) -f $(COMPOSE_FILE) rm -f $(TEST_SERVICE) postgres-test
+	@echo "\033[0;32m🧪 Ejecutando tests (sin rebuild)...\033[0m"
+	@echo "\033[0;34m   Esto levanta: PostgreSQL de test y ejecuta los tests\033[0m"
+	@docker compose -f docker-compose.yml up api-test --abort-on-container-exit
+	@docker compose -f docker-compose.yml rm -f api-test postgres-test
 
 ps: check-docker ## Muestra el estado de los contenedores
-	@$(COMPOSE) -f $(COMPOSE_FILE) ps
+	@docker compose -f docker-compose.yml ps
 
 status: check-docker ## Muestra estado detallado de los servicios
-	@echo "$(BLUE)════════════════════════════════════════════════════════════$(NC)"
-	@echo "$(GREEN)  Estado de los servicios$(NC)"
-	@echo "$(BLUE)════════════════════════════════════════════════════════════$(NC)"
+	@echo "\033[0;34m════════════════════════════════════════════════════════════\033[0m"
+	@echo "\033[0;32m  Estado de los servicios\033[0m"
+	@echo "\033[0;34m════════════════════════════════════════════════════════════\033[0m"
 	@echo ""
-	@$(COMPOSE) -f $(COMPOSE_FILE) ps
+	@docker compose -f docker-compose.yml ps
 	@echo ""
-	@echo "$(BLUE)URLs disponibles:$(NC)"
-	@echo "  $(GREEN)API:$(NC)      http://localhost:3000"
-	@echo "  $(GREEN)Swagger:$(NC)  http://localhost:3000/docs"
-	@echo "  $(GREEN)PostgreSQL:$(NC) localhost:5432"
+	@echo "\033[0;34mURLs disponibles:\033[0m"
+	@echo "  \033[0;32mAPI:\033[0m      http://localhost:3000"
+	@echo "  \033[0;32mSwagger:\033[0m  http://localhost:3000/docs"
+	@echo "  \033[0;32mPostgreSQL:\033[0m localhost:5432"
 	@echo ""
 
 shell-api: check-docker ## Abre una shell en el contenedor de la API
-	@echo "$(BLUE)Abriendo shell en contenedor de API...$(NC)"
-	@$(COMPOSE) -f $(COMPOSE_FILE) exec $(API_SERVICE) sh
+	@echo "\033[0;34mAbriendo shell en contenedor de API...\033[0m"
+	@docker compose -f docker-compose.yml exec api sh
 
 shell-db: check-docker ## Abre una shell en PostgreSQL
-	@echo "$(BLUE)Abriendo shell en PostgreSQL...$(NC)"
-	@$(COMPOSE) -f $(COMPOSE_FILE) exec $(POSTGRES_SERVICE) psql -U racional -d racional_db
+	@echo "\033[0;34mAbriendo shell en PostgreSQL...\033[0m"
+	@docker compose -f docker-compose.yml exec postgres psql -U racional -d racional_db
 
 restart: down up ## Reinicia todos los servicios
 
 restart-api: check-docker ## Reinicia solo el servicio de la API
-	@echo "$(YELLOW)🔄 Reiniciando API...$(NC)"
-	@$(COMPOSE) -f $(COMPOSE_FILE) restart $(API_SERVICE)
-	@echo "$(GREEN)✅ API reiniciada$(NC)"
+	@echo "\033[0;33m🔄 Reiniciando API...\033[0m"
+	@docker compose -f docker-compose.yml restart api
+	@echo "\033[0;32m✅ API reiniciada\033[0m"
 
 migrate: check-docker ## Ejecuta migraciones manualmente (desde el contenedor)
-	@echo "$(YELLOW)🔄 Ejecutando migraciones...$(NC)"
-	@$(COMPOSE) -f $(COMPOSE_FILE) exec $(API_SERVICE) npx prisma migrate deploy
-	@echo "$(GREEN)✅ Migraciones completadas$(NC)"
+	@echo "\033[0;33m🔄 Ejecutando migraciones...\033[0m"
+	@docker compose -f docker-compose.yml exec api npx prisma migrate deploy
+	@echo "\033[0;32m✅ Migraciones completadas\033[0m"
 
 seed: check-docker ## Ejecuta seeds manualmente (desde el contenedor)
-	@echo "$(YELLOW)🌱 Ejecutando seeds...$(NC)"
-	@$(COMPOSE) -f $(COMPOSE_FILE) exec $(API_SERVICE) npx prisma db seed
-	@echo "$(GREEN)✅ Seeds completados$(NC)"
+	@echo "\033[0;33m🌱 Ejecutando seeds...\033[0m"
+	@docker compose -f docker-compose.yml exec api npx prisma db seed
+	@echo "\033[0;32m✅ Seeds completados\033[0m"
 
 stop: check-docker ## Detiene servicios sin eliminarlos
-	@echo "$(YELLOW)⏸️  Deteniendo servicios...$(NC)"
-	@$(COMPOSE) -f $(COMPOSE_FILE) stop
-	@echo "$(GREEN)✅ Servicios detenidos$(NC)"
+	@echo "\033[0;33m⏸️  Deteniendo servicios...\033[0m"
+	@docker compose -f docker-compose.yml stop
+	@echo "\033[0;32m✅ Servicios detenidos\033[0m"
 
 start: check-docker ## Inicia servicios previamente detenidos
-	@echo "$(GREEN)▶️  Iniciando servicios...$(NC)"
-	@$(COMPOSE) -f $(COMPOSE_FILE) start
-	@echo "$(GREEN)✅ Servicios iniciados$(NC)"
+	@echo "\033[0;32m▶️  Iniciando servicios...\033[0m"
+	@docker compose -f docker-compose.yml start
+	@echo "\033[0;32m✅ Servicios iniciados\033[0m"
 
