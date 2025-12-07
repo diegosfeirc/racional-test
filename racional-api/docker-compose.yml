@@ -41,6 +41,8 @@ services:
         sh ./scripts/wait-for-postgres.sh postgres 5432 racional racional_db racional_password
         echo "Running migrations..."
         sh ./scripts/migrate.sh
+        echo "Running seeds..."
+        sh ./scripts/seed.sh
         echo "Starting API..."
         node dist/src/main.js
     volumes:

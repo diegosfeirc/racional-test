@@ -1,4 +1,4 @@
-.PHONY: help up down build rebuild logs logs-api test test-only dev clean ps shell-api shell-db restart restart-api migrate status check-docker
+.PHONY: help up down build rebuild logs logs-api test test-only dev clean ps shell-api shell-db restart restart-api migrate seed status check-docker
 
 # Variables
 COMPOSE := docker compose
@@ -129,6 +129,11 @@ migrate: check-docker ## Ejecuta migraciones manualmente (desde el contenedor)
 	@echo "$(YELLOW)🔄 Ejecutando migraciones...$(NC)"
 	@$(COMPOSE) -f $(COMPOSE_FILE) exec $(API_SERVICE) sh ./scripts/migrate.sh
 	@echo "$(GREEN)✅ Migraciones completadas$(NC)"
+
+seed: check-docker ## Ejecuta seeds manualmente (desde el contenedor)
+	@echo "$(YELLOW)🌱 Ejecutando seeds...$(NC)"
+	@$(COMPOSE) -f $(COMPOSE_FILE) exec $(API_SERVICE) sh ./scripts/seed.sh
+	@echo "$(GREEN)✅ Seeds completados$(NC)"
 
 stop: check-docker ## Detiene servicios sin eliminarlos
 	@echo "$(YELLOW)⏸️  Deteniendo servicios...$(NC)"
