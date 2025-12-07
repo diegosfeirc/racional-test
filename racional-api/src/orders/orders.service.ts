@@ -9,6 +9,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderResponseDto } from './dto/order-response.dto';
 import { Prisma, OrderType, OrderStatus } from '@prisma/client';
 import { OrderEntity, OrderWithRelations } from '../common/types/order.types';
+import { dollarsToCents, centsToDollars } from '../common/utils/currency.utils';
 
 @Injectable()
 export class OrdersService {
@@ -17,7 +18,9 @@ export class OrdersService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createOrderDto: CreateOrderDto): Promise<OrderResponseDto> {
-    const total = createOrderDto.quantity * createOrderDto.unitPrice;
+    const unitPriceInCents = dollarsToCents(createOrderDto.unitPrice);
+    const totalInCents = BigInt(createOrderDto.quantity) * unitPriceInCents;
+    const totalInDollars = createOrderDto.quantity * createOrderDto.unitPrice;
 
     const order = await this.prisma.$transaction(async (tx) => {
       const user = await tx.user.findUnique({
@@ -67,10 +70,10 @@ export class OrdersService {
           );
         }
 
-        const currentBalance = Number(wallet.balance);
-        if (currentBalance < total) {
+        const currentBalance = centsToDollars(wallet.balance);
+        if (currentBalance < totalInDollars) {
           this.logger.warn(
-            `Insufficient balance for buy order. User: ${createOrderDto.userId}, Balance: ${currentBalance}, Required: ${total}`,
+            `Insufficient balance for buy order. User: ${createOrderDto.userId}, Balance: ${currentBalance}, Required: ${totalInDollars}`,
           );
           throw new BadRequestException('Insufficient balance');
         }
@@ -98,8 +101,8 @@ export class OrdersService {
           stockId: createOrderDto.stockId,
           type: createOrderDto.type,
           quantity: createOrderDto.quantity,
-          unitPrice: createOrderDto.unitPrice,
-          total: total,
+          unitPrice: unitPriceInCents,
+          total: totalInCents,
           status: OrderStatus.EXECUTED,
           executedAt: new Date(),
         },
@@ -110,7 +113,7 @@ export class OrdersService {
           where: { userId: createOrderDto.userId },
           data: {
             balance: {
-              decrement: total,
+              decrement: totalInCents,
             },
           },
         });
@@ -120,7 +123,7 @@ export class OrdersService {
           portfolio.id,
           createOrderDto.stockId,
           createOrderDto.quantity,
-          createOrderDto.unitPrice,
+          unitPriceInCents,
           true,
         );
       } else if (createOrderDto.type === OrderType.SELL) {
@@ -128,7 +131,7 @@ export class OrdersService {
           where: { userId: createOrderDto.userId },
           data: {
             balance: {
-              increment: total,
+              increment: totalInCents,
             },
           },
         });
@@ -138,7 +141,7 @@ export class OrdersService {
           portfolio.id,
           createOrderDto.stockId,
           createOrderDto.quantity,
-          createOrderDto.unitPrice,
+          unitPriceInCents,
           false,
         );
       }
@@ -192,7 +195,7 @@ export class OrdersService {
     portfolioId: string,
     stockId: string,
     quantity: number,
-    unitPrice: number,
+    unitPriceInCents: bigint,
     isBuy: boolean,
   ): Promise<void> {
     const existingHolding = await tx.portfolioHolding.findUnique({
@@ -207,10 +210,11 @@ export class OrdersService {
     if (isBuy) {
       if (existingHolding) {
         const currentTotal =
-          Number(existingHolding.averageBuyPrice) * existingHolding.quantity;
-        const newTotal = unitPrice * quantity;
+          existingHolding.averageBuyPrice * BigInt(existingHolding.quantity);
+        const newTotal = unitPriceInCents * BigInt(quantity);
         const newQuantity = existingHolding.quantity + quantity;
-        const newAveragePrice = (currentTotal + newTotal) / newQuantity;
+        const newAveragePriceInCents =
+          (currentTotal + newTotal) / BigInt(newQuantity);
 
         await tx.portfolioHolding.update({
           where: {
@@ -221,7 +225,7 @@ export class OrdersService {
           },
           data: {
             quantity: newQuantity,
-            averageBuyPrice: newAveragePrice,
+            averageBuyPrice: newAveragePriceInCents,
           },
         });
       } else {
@@ -230,7 +234,7 @@ export class OrdersService {
             portfolioId: portfolioId,
             stockId: stockId,
             quantity: quantity,
-            averageBuyPrice: unitPrice,
+            averageBuyPrice: unitPriceInCents,
           },
         });
       }
@@ -275,8 +279,8 @@ export class OrdersService {
       stockId: order.stockId,
       type: order.type,
       quantity: order.quantity,
-      unitPrice: Number(order.unitPrice),
-      total: Number(order.total),
+      unitPrice: centsToDollars(order.unitPrice),
+      total: centsToDollars(order.total),
       status: order.status,
       createdAt: order.createdAt,
       executedAt: order.executedAt,

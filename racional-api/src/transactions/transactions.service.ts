@@ -9,6 +9,7 @@ import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { TransactionResponseDto } from './dto/transaction-response.dto';
 import { TransactionType } from '@prisma/client';
 import { TransactionEntity } from '../common/types/transaction.types';
+import { dollarsToCents, centsToDollars } from '../common/utils/currency.utils';
 
 @Injectable()
 export class TransactionsService {
@@ -30,6 +31,8 @@ export class TransactionsService {
         );
       }
 
+      const amountInCents = dollarsToCents(createTransactionDto.amount);
+
       if (createTransactionDto.type === TransactionType.WITHDRAWAL) {
         const wallet = await tx.wallet.findUnique({
           where: { userId: createTransactionDto.userId },
@@ -41,7 +44,7 @@ export class TransactionsService {
           );
         }
 
-        const currentBalance = Number(wallet.balance);
+        const currentBalance = centsToDollars(wallet.balance);
         if (currentBalance < createTransactionDto.amount) {
           this.logger.warn(
             `Insufficient balance for user ${createTransactionDto.userId}. Balance: ${currentBalance}, Requested: ${createTransactionDto.amount}`,
@@ -54,7 +57,7 @@ export class TransactionsService {
         data: {
           userId: createTransactionDto.userId,
           type: createTransactionDto.type,
-          amount: createTransactionDto.amount,
+          amount: amountInCents,
           date: new Date(createTransactionDto.date),
           ...(createTransactionDto.description && {
             description: createTransactionDto.description,
@@ -67,7 +70,7 @@ export class TransactionsService {
           where: { userId: createTransactionDto.userId },
           data: {
             balance: {
-              increment: createTransactionDto.amount,
+              increment: amountInCents,
             },
           },
         });
@@ -76,7 +79,7 @@ export class TransactionsService {
           where: { userId: createTransactionDto.userId },
           data: {
             balance: {
-              decrement: createTransactionDto.amount,
+              decrement: amountInCents,
             },
           },
         });
@@ -129,7 +132,7 @@ export class TransactionsService {
       id: transaction.id,
       userId: transaction.userId,
       type: transaction.type,
-      amount: Number(transaction.amount),
+      amount: centsToDollars(transaction.amount),
       date: transaction.date,
       description: transaction.description,
       createdAt: transaction.createdAt,

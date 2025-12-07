@@ -57,7 +57,7 @@ export class CreateOrderDto {
     example: 150.5,
     minimum: 0.01,
   })
-  @IsNumber()
+  @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0.01)
   unitPrice: number;
 }

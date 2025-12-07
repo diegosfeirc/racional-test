@@ -30,7 +30,7 @@ describe('OrdersService', () => {
     id: 'stock-123',
     symbol: 'AAPL',
     name: 'Apple Inc.',
-    price: new Prisma.Decimal(150.5),
+    price: BigInt(15050), // $150.50 in cents
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
@@ -47,7 +47,7 @@ describe('OrdersService', () => {
   const mockWallet = {
     id: 'wallet-123',
     userId: 'user-123',
-    balance: new Prisma.Decimal(10000),
+    balance: BigInt(1000000), // $10000.00 in cents
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
@@ -89,8 +89,8 @@ describe('OrdersService', () => {
         stockId: 'stock-123',
         type: OrderType.BUY,
         quantity: 10,
-        unitPrice: new Prisma.Decimal(150.5),
-        total: new Prisma.Decimal(1505),
+        unitPrice: BigInt(15050), // $150.50 in cents
+        total: BigInt(150500), // $1505.00 in cents
         status: OrderStatus.EXECUTED,
         createdAt: new Date('2024-01-01'),
         executedAt: new Date('2024-01-01'),
@@ -125,7 +125,7 @@ describe('OrdersService', () => {
           create: jest.fn(),
           update: jest.fn().mockResolvedValue({
             ...mockWallet,
-            balance: new Prisma.Decimal(8495),
+            balance: BigInt(849500), // $8495.00 in cents
           }),
         },
         order: {
@@ -139,7 +139,7 @@ describe('OrdersService', () => {
             portfolioId: 'portfolio-123',
             stockId: 'stock-123',
             quantity: 10,
-            averageBuyPrice: new Prisma.Decimal(150.5),
+            averageBuyPrice: BigInt(15050), // $150.50 in cents
           }),
           update: jest.fn(),
           delete: jest.fn(),
@@ -224,7 +224,7 @@ describe('OrdersService', () => {
     it('should throw BadRequestException if insufficient balance', async () => {
       const poorWallet = {
         ...mockWallet,
-        balance: new Prisma.Decimal(100),
+        balance: BigInt(10000), // $100.00 in cents
       };
 
       const mockTransactionClient: MockTransactionClient = {
@@ -390,8 +390,8 @@ describe('OrdersService', () => {
         stockId: 'stock-123',
         type: OrderType.BUY,
         quantity: 10,
-        unitPrice: new Prisma.Decimal(150.5),
-        total: new Prisma.Decimal(1505),
+        unitPrice: BigInt(15050), // $150.50 in cents
+        total: BigInt(150500), // $1505.00 in cents
         status: OrderStatus.EXECUTED,
         createdAt: new Date('2024-01-01'),
         executedAt: new Date('2024-01-01'),

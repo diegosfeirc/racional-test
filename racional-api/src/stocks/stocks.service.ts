@@ -9,6 +9,7 @@ import { CreateStockDto } from './dto/create-stock.dto';
 import { UpdateStockDto } from './dto/update-stock.dto';
 import { StockResponseDto } from './dto/stock-response.dto';
 import { Prisma } from '@prisma/client';
+import { dollarsToCents, centsToDollars } from '../common/utils/currency.utils';
 
 @Injectable()
 export class StocksService {
@@ -18,11 +19,12 @@ export class StocksService {
 
   async create(createStockDto: CreateStockDto): Promise<StockResponseDto> {
     try {
+      const priceInCents = dollarsToCents(createStockDto.price);
       const stock = await this.prisma.stock.create({
         data: {
           symbol: createStockDto.symbol,
           name: createStockDto.name,
-          price: createStockDto.price,
+          price: priceInCents,
         },
       });
 
@@ -83,15 +85,20 @@ export class StocksService {
     updateStockDto: UpdateStockDto,
   ): Promise<StockResponseDto> {
     try {
+      const updateData: {
+        symbol?: string;
+        name?: string;
+        price?: bigint;
+      } = {};
+      if (updateStockDto.symbol) updateData.symbol = updateStockDto.symbol;
+      if (updateStockDto.name) updateData.name = updateStockDto.name;
+      if (updateStockDto.price !== undefined) {
+        updateData.price = dollarsToCents(updateStockDto.price);
+      }
+
       const stock = await this.prisma.stock.update({
         where: { id },
-        data: {
-          ...(updateStockDto.symbol && { symbol: updateStockDto.symbol }),
-          ...(updateStockDto.name && { name: updateStockDto.name }),
-          ...(updateStockDto.price !== undefined && {
-            price: updateStockDto.price,
-          }),
-        },
+        data: updateData,
       });
 
       this.logger.log(`Stock updated: ${id} (${stock.symbol})`);
@@ -121,7 +128,7 @@ export class StocksService {
     id: string;
     symbol: string;
     name: string;
-    price: Prisma.Decimal;
+    price: bigint;
     createdAt: Date;
     updatedAt: Date;
   }): StockResponseDto {
@@ -129,7 +136,7 @@ export class StocksService {
       id: stock.id,
       symbol: stock.symbol,
       name: stock.name,
-      price: Number(stock.price),
+      price: centsToDollars(stock.price),
       createdAt: stock.createdAt,
       updatedAt: stock.updatedAt,
     };

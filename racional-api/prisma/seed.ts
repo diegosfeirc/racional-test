@@ -34,7 +34,7 @@ const SEED_DATA = {
       id: '87654321-fedc-b987-6543-210fedcba987',
       symbol: 'AAPL',
       name: 'Apple Inc.',
-      price: 150.5,
+      price: 150500,
       createdAt: new Date('2024-12-04T10:00:00Z'),
       updatedAt: new Date('2024-12-04T10:00:00Z'),
     },
@@ -42,7 +42,7 @@ const SEED_DATA = {
       id: '10293847-5645-3421-a0b9-c8d7e6f54321',
       symbol: 'TSLA',
       name: 'Tesla Inc.',
-      price: 175.5,
+      price: 175500,
       createdAt: new Date('2024-12-04T10:00:00Z'),
       updatedAt: new Date('2024-12-04T10:00:00Z'),
     },
@@ -50,7 +50,7 @@ const SEED_DATA = {
       id: '7c8d9e0f-1a2b-3c4d-5e6f-7890fedcba98',
       symbol: 'META',
       name: 'Meta Inc.',
-      price: 215.5,
+      price: 215500,
       createdAt: new Date('2024-12-04T10:00:00Z'),
       updatedAt: new Date('2024-12-04T10:00:00Z'),
     },
@@ -88,8 +88,9 @@ async function main(): Promise<void> {
       },
       create: SEED_DATA.wallet,
     });
+    const balanceInDollars = Number(wallet.balance) / 100;
     console.log(
-      `✅ Wallet creada/actualizada: ${wallet.id} (Balance: $${wallet.balance.toString()})\n`,
+      `✅ Wallet creada/actualizada: ${wallet.id} (Balance: $${balanceInDollars.toFixed(2)})\n`,
     );
 
     // 3. Crear o actualizar portafolio para el usuario
@@ -131,8 +132,9 @@ async function main(): Promise<void> {
         create: stockData,
       });
       createdStocks.push(stock);
+      const priceInDollars = Number(stock.price) / 100;
       console.log(
-        `  ✅ ${stock.symbol} - ${stock.name} ($${stock.price.toString()})`,
+        `  ✅ ${stock.symbol} - ${stock.name} ($${priceInDollars.toFixed(2)})`,
       );
     }
     console.log(`\n✅ ${createdStocks.length} stocks creados/actualizados\n`);
@@ -141,9 +143,10 @@ async function main(): Promise<void> {
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log('✨ Seeds ejecutados correctamente');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    const finalBalanceInDollars = Number(wallet.balance) / 100;
     console.log(`👤 Usuario: ${user.email}`);
     console.log(
-      `💰 Wallet: ${wallet.id} (Balance: $${wallet.balance.toString()})`,
+      `💰 Wallet: ${wallet.id} (Balance: $${finalBalanceInDollars.toFixed(2)})`,
     );
     console.log(`📊 Portafolio: ${portfolio.name}`);
     console.log(`📈 Stocks: ${createdStocks.length} stocks`);

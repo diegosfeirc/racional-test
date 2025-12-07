@@ -37,17 +37,13 @@ make up
 
 1. Verifica que Docker esté instalado y funcionando
 2. Construye las imágenes Docker necesarias
-3. Ejecuta los tests de integración primero:
-   - Levanta una base de datos PostgreSQL temporal para tests (puerto 5433)
-   - Ejecuta las migraciones en la base de datos de tests
-   - Ejecuta todos los tests de integración
-4. **Solo si los tests pasan exitosamente**, levanta los servicios de desarrollo:
+3. Levanta los servicios de la aplicación:
    - **PostgreSQL**: Base de datos en el puerto 5432
    - **API**: Servidor NestJS en el puerto 3000
-5. Ejecuta automáticamente las migraciones en la base de datos de desarrollo
-6. Ejecuta el seed para poblar la base de datos con datos iniciales
+4. Ejecuta automáticamente las migraciones en la base de datos de desarrollo
+5. Ejecuta el seed para poblar la base de datos con datos iniciales
 
-**Importante**: Si los tests de integración fallan, los servicios de desarrollo (API y PostgreSQL) **no se iniciarán**, garantizando que solo se ejecute código que ha pasado todas las pruebas.
+**Nota**: Los tests de integración son independientes y se ejecutan por separado con `make test`. La aplicación puede levantarse sin necesidad de ejecutar los tests primero.
 
 Una vez ejecutado exitosamente, la API estará disponible en:
 - **API**: http://localhost:3000
@@ -57,35 +53,51 @@ Una vez ejecutado exitosamente, la API estará disponible en:
 ### Otros comandos útiles
 
 ```bash
-make dev      # Levanta solo servicios de desarrollo (sin tests)
+make dev      # Levanta servicios de desarrollo en modo interactivo
+make test     # Ejecuta los tests de integración (independiente de la app)
+make test-only # Ejecuta tests sin reconstruir imágenes (más rápido)
 make down     # Detiene todos los servicios
 make clean    # Detiene servicios y elimina volúmenes (limpia datos)
 make logs     # Muestra logs de todos los servicios
 make status   # Muestra el estado de los servicios
 ```
 
+**Ejecutar tests de integración**:
+
+Los tests de integración se ejecutan de forma independiente y no bloquean el inicio de la aplicación. Para ejecutarlos:
+
+```bash
+make test
+```
+
+Este comando:
+- Levanta una base de datos PostgreSQL temporal para tests (puerto 5433)
+- Ejecuta las migraciones en la base de datos de tests
+- Ejecuta todos los tests de integración
+- Limpia los contenedores de test al finalizar
+
 ## Data Seed
 
 Al ejecutar `make up`, se crea automáticamente la siguiente data inicial:
 
 - **Usuario de prueba**:
-  - ID: `user-123`
+  - ID: `a1b2c3d4-e5f6-7890-1234-567890abcdef`
   - Email: `usuario@example.com`
   - Nombre: Juan Pérez
 
 - **Wallet**:
-  - ID: `wallet-123`
+  - ID: `9f8e7d6c-5b4a-3210-fedc-ba9876543210`
   - Balance inicial: $0
 
 - **Portafolio**:
-  - ID: `portfolio-123`
+  - ID: `2a3b4c5d-6e7f-8091-a2b3-c4d5e6f70819`
   - Nombre: "Mi portafolio"
   - Descripción: "Portafolio de inversión a largo plazo"
 
 - **Stocks disponibles**:
-  - **AAPL** (Apple Inc.) - $150.50 - ID: `stock-1`
-  - **TSLA** (Tesla Inc.) - $175.50 - ID: `stock-2`
-  - **META** (Meta Inc.) - $215.50 - ID: `stock-3`
+  - **AAPL** (Apple Inc.) - $150.50 - ID: `87654321-fedc-b987-6543-210fedcba987`
+  - **TSLA** (Tesla Inc.) - $175.50 - ID: `10293847-5645-3421-a0b9-c8d7e6f54321`
+  - **META** (Meta Inc.) - $215.50 - ID: `7c8d9e0f-1a2b-3c4d-5e6f-7890fedcba98`
 
 Esta data seed permite probar la API inmediatamente sin necesidad de crear datos manualmente.
 
@@ -105,7 +117,7 @@ Registra una transacción de depósito o retiro para un usuario. Requiere:
 **Ejemplo**:
 ```json
 {
-  "userId": "user-123",
+  "userId": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
   "type": "DEPOSIT",
   "amount": 1000.00,
   "date": "2024-12-04T10:00:00Z",
@@ -128,9 +140,9 @@ Registra una orden de compra o venta de acciones. Requiere:
 **Ejemplo**:
 ```json
 {
-  "userId": "user-123",
-  "stockId": "stock-1",
-  "portfolioId": "portfolio-123",
+  "userId": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+  "stockId": "87654321-fedc-b987-6543-210fedcba987",
+  "portfolioId": "2a3b4c5d-6e7f-8091-a2b3-c4d5e6f70819",
   "type": "BUY",
   "quantity": 10,
   "unitPrice": 150.50
@@ -179,7 +191,7 @@ Retorna el valor total del portafolio calculado con los precios actuales de las 
 **Respuesta**:
 ```json
 {
-  "portfolioId": "portfolio-123",
+  "portfolioId": "2a3b4c5d-6e7f-8091-a2b3-c4d5e6f70819",
   "totalValue": 1505.00,
   "holdings": [...]
 }
@@ -191,7 +203,7 @@ Retorna el valor total del portafolio calculado con los precios actuales de las 
 
 Retorna los últimos movimientos del usuario (transacciones y órdenes), ordenados por fecha descendente. El parámetro `limit` es opcional (por defecto 10).
 
-**Ejemplo**: `GET /users/user-123/movements?limit=20`
+**Ejemplo**: `GET /users/a1b2c3d4-e5f6-7890-1234-567890abcdef/movements?limit=20`
 
 ### Documentación completa
 

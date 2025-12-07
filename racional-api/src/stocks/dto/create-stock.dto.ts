@@ -31,7 +31,7 @@ export class CreateStockDto {
     example: 150.5,
     minimum: 0,
   })
-  @IsNumber()
+  @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
   price: number;
 }

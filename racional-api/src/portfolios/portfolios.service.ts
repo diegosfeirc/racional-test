@@ -10,6 +10,7 @@ import { UpdatePortfolioDto } from './dto/update-portfolio.dto';
 import { PortfolioResponseDto } from './dto/portfolio-response.dto';
 import { PortfolioTotalResponseDto } from './dto/portfolio-total-response.dto';
 import { Prisma } from '@prisma/client';
+import { centsToDollars } from '../common/utils/currency.utils';
 
 @Injectable()
 export class PortfoliosService {
@@ -208,7 +209,7 @@ export class PortfoliosService {
     });
 
     const holdingsWithValue = holdings.map((holding) => {
-      const currentPrice = Number(holding.stock.price);
+      const currentPrice = centsToDollars(holding.stock.price);
       const currentValue = holding.quantity * currentPrice;
 
       return {
@@ -216,7 +217,7 @@ export class PortfoliosService {
         stockSymbol: holding.stock.symbol,
         stockName: holding.stock.name,
         quantity: holding.quantity,
-        averageBuyPrice: Number(holding.averageBuyPrice),
+        averageBuyPrice: centsToDollars(holding.averageBuyPrice),
         currentPrice: currentPrice,
         currentValue: currentValue,
       };

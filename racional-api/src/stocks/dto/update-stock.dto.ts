@@ -34,7 +34,7 @@ export class UpdateStockDto {
     minimum: 0,
     required: false,
   })
-  @IsNumber()
+  @IsNumber({ maxDecimalPlaces: 2 })
   @IsOptional()
   @Min(0)
   price?: number;

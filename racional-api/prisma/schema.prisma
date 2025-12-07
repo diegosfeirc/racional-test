@@ -62,7 +62,7 @@ model Stock {
   id        String   @id @default(uuid())
   symbol    String   @unique
   name      String
-  price     Decimal  @db.Decimal(10, 2)
+  price     BigInt
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -76,7 +76,7 @@ model Transaction {
   id          String          @id @default(uuid())
   userId      String
   type        TransactionType
-  amount      Decimal         @db.Decimal(12, 2)
+  amount      BigInt
   date        DateTime
   description String?
   createdAt   DateTime        @default(now())
@@ -93,8 +93,8 @@ model Order {
   stockId      String
   type         OrderType
   quantity     Int
-  unitPrice    Decimal    @db.Decimal(10, 2)
-  total        Decimal    @db.Decimal(12, 2)
+  unitPrice    BigInt
+  total        BigInt
   status       OrderStatus @default(PENDING)
   createdAt    DateTime   @default(now())
   executedAt   DateTime?
@@ -112,7 +112,7 @@ model PortfolioHolding {
   portfolioId       String
   stockId           String
   quantity          Int
-  averageBuyPrice   Decimal  @db.Decimal(10, 2)
+  averageBuyPrice   BigInt
   updatedAt         DateTime @updatedAt
 
   portfolio Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
@@ -126,7 +126,7 @@ model PortfolioHolding {
 model Wallet {
   id        String   @id @default(uuid())
   userId    String   @unique
-  balance   Decimal  @default(0) @db.Decimal(12, 2)
+  balance   BigInt   @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

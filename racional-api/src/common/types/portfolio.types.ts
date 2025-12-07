@@ -1,5 +1,3 @@
-import { Prisma } from '@prisma/client';
-
 export interface PortfolioEntity {
   id: string;
   userId: string;
@@ -14,6 +12,6 @@ export interface PortfolioHoldingEntity {
   portfolioId: string;
   stockId: string;
   quantity: number;
-  averageBuyPrice: Prisma.Decimal;
+  averageBuyPrice: bigint;
   updatedAt: Date;
 }

@@ -33,7 +33,7 @@ export class CreateTransactionDto {
     example: 1000.0,
     minimum: 0.01,
   })
-  @IsNumber()
+  @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0.01)
   amount: number;
 

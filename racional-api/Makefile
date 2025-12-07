@@ -25,9 +25,9 @@ help: ## Muestra esta ayuda
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(GREEN)%-18s$(NC) %s\n", $$1, $$2}'
 	@echo ""
 	@echo "$(BLUE)Ejemplos:$(NC)"
-	@echo "  $(YELLOW)make up$(NC)          - Levanta todo (API + tests)"
-	@echo "  $(YELLOW)make dev$(NC)         - Solo desarrollo (sin tests)"
-	@echo "  $(YELLOW)make test$(NC)        - Solo ejecutar tests"
+	@echo "  $(YELLOW)make up$(NC)          - Levanta la aplicación (API + PostgreSQL)"
+	@echo "  $(YELLOW)make dev$(NC)         - Modo desarrollo interactivo"
+	@echo "  $(YELLOW)make test$(NC)        - Ejecuta tests de integración"
 	@echo ""
 
 check-docker: ## Verifica que Docker esté instalado y funcionando
@@ -58,10 +58,10 @@ rebuild: check-docker ## Reconstruye las imágenes desde cero (sin cache)
 	@$(COMPOSE) -f $(COMPOSE_FILE) build --no-cache
 	@echo "$(GREEN)✅ Imágenes reconstruidas$(NC)"
 
-up: build ## Levanta todos los servicios (API + tests automáticos)
-	@echo "$(GREEN)🚀 Levantando todos los servicios...$(NC)"
-	@echo "$(BLUE)   Esto incluye: PostgreSQL, API y tests de integración$(NC)"
-	@$(COMPOSE) -f $(COMPOSE_FILE) up -d
+up: build ## Levanta solo los servicios de la aplicación (API + PostgreSQL)
+	@echo "$(GREEN)🚀 Levantando servicios de la aplicación...$(NC)"
+	@echo "$(BLUE)   Esto incluye: PostgreSQL y API$(NC)"
+	@$(COMPOSE) -f $(COMPOSE_FILE) up -d $(POSTGRES_SERVICE) $(API_SERVICE)
 
 dev: build ## Levanta solo servicios de desarrollo (sin tests)
 	@echo "$(GREEN)🚀 Levantando servicios de desarrollo...$(NC)"
@@ -86,13 +86,17 @@ logs: check-docker ## Muestra logs de todos los servicios (seguimiento en tiempo
 logs-api: check-docker ## Muestra logs solo de la API
 	@$(COMPOSE) -f $(COMPOSE_FILE) logs -f $(API_SERVICE)
 
-test: build ## Ejecuta solo los tests de integración
+test: build ## Ejecuta los tests de integración (independiente de la app)
 	@echo "$(GREEN)🧪 Ejecutando tests de integración...$(NC)"
-	@$(COMPOSE) -f $(COMPOSE_FILE) up $(TEST_SERVICE) --build
+	@echo "$(BLUE)   Esto levanta: PostgreSQL de test y ejecuta los tests$(NC)"
+	@$(COMPOSE) -f $(COMPOSE_FILE) up --build $(TEST_SERVICE) --abort-on-container-exit
+	@$(COMPOSE) -f $(COMPOSE_FILE) rm -f $(TEST_SERVICE) postgres-test
 
 test-only: check-docker ## Ejecuta tests sin reconstruir (más rápido)
 	@echo "$(GREEN)🧪 Ejecutando tests (sin rebuild)...$(NC)"
-	@$(COMPOSE) -f $(COMPOSE_FILE) up $(TEST_SERVICE)
+	@echo "$(BLUE)   Esto levanta: PostgreSQL de test y ejecuta los tests$(NC)"
+	@$(COMPOSE) -f $(COMPOSE_FILE) up $(TEST_SERVICE) --abort-on-container-exit
+	@$(COMPOSE) -f $(COMPOSE_FILE) rm -f $(TEST_SERVICE) postgres-test
 
 ps: check-docker ## Muestra el estado de los contenedores
 	@$(COMPOSE) -f $(COMPOSE_FILE) ps

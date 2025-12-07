@@ -17,7 +17,7 @@ services:
     networks:
       - racional-network
 
-  # Test service (runs tests and exits) - must succeed before dev services start
+  # Test service (runs tests and exits) - independent from dev services
   api-test:
     build:
       context: .
@@ -45,7 +45,7 @@ services:
     networks:
       - racional-network
 
-  # PostgreSQL for development - only starts after tests pass
+  # PostgreSQL for development
   postgres:
     image: postgres:16-alpine
     container_name: racional-postgres
@@ -62,13 +62,10 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    depends_on:
-      api-test:
-        condition: service_completed_successfully
     networks:
       - racional-network
 
-  # API service for development - only starts after tests pass
+  # API service for development
   api:
     build:
       context: .
@@ -81,8 +78,6 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      api-test:
-        condition: service_completed_successfully
       postgres:
         condition: service_healthy
     entrypoint: ["sh", "-c"]

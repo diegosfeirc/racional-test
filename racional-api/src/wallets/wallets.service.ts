@@ -7,6 +7,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { WalletResponseDto } from './dto/wallet-response.dto';
 import { Prisma } from '@prisma/client';
+import { dollarsToCents, centsToDollars } from '../common/utils/currency.utils';
 
 @Injectable()
 export class WalletsService {
@@ -74,11 +75,12 @@ export class WalletsService {
     }
 
     try {
+      const amountInCents = dollarsToCents(amount);
       const wallet = await this.prisma.wallet.update({
         where: { userId },
         data: {
           balance: {
-            increment: amount,
+            increment: amountInCents,
           },
         },
       });
@@ -121,7 +123,7 @@ export class WalletsService {
           );
         }
 
-        const currentBalance = Number(walletRecord.balance);
+        const currentBalance = centsToDollars(walletRecord.balance);
         if (currentBalance < amount) {
           this.logger.warn(
             `Insufficient balance for user ${userId}. Balance: ${currentBalance}, Requested: ${amount}`,
@@ -129,11 +131,12 @@ export class WalletsService {
           throw new BadRequestException('Insufficient balance');
         }
 
+        const amountInCents = dollarsToCents(amount);
         const updatedWallet = await tx.wallet.update({
           where: { userId },
           data: {
             balance: {
-              decrement: amount,
+              decrement: amountInCents,
             },
           },
         });
@@ -172,14 +175,14 @@ export class WalletsService {
   private mapToResponseDto(wallet: {
     id: string;
     userId: string;
-    balance: Prisma.Decimal;
+    balance: bigint;
     createdAt: Date;
     updatedAt: Date;
   }): WalletResponseDto {
     return {
       id: wallet.id,
       userId: wallet.userId,
-      balance: Number(wallet.balance),
+      balance: centsToDollars(wallet.balance),
       createdAt: wallet.createdAt,
       updatedAt: wallet.updatedAt,
     };

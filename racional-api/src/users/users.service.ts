@@ -13,6 +13,7 @@ import { UserResponseDto } from './dto/user-response.dto';
 import { MovementResponseDto, MovementType } from './dto/movement-response.dto';
 import { Prisma } from '@prisma/client';
 import { UserEntity } from '../common/types/user.types';
+import { centsToDollars } from '../common/utils/currency.utils';
 
 @Injectable()
 export class UsersService {
@@ -158,7 +159,7 @@ export class UsersService {
         type: MovementType.TRANSACTION,
         date: transaction.date,
         description: transaction.description,
-        amount: Number(transaction.amount),
+        amount: centsToDollars(transaction.amount),
         transactionType: transaction.type,
       }),
     );
@@ -172,8 +173,8 @@ export class UsersService {
       stockSymbol: order.stock.symbol,
       stockName: order.stock.name,
       quantity: order.quantity,
-      unitPrice: Number(order.unitPrice),
-      total: Number(order.total),
+      unitPrice: centsToDollars(order.unitPrice),
+      total: centsToDollars(order.total),
     }));
 
     const allMovements = [...transactionMovements, ...orderMovements].sort(

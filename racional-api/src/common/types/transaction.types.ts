@@ -1,10 +1,10 @@
-import { Prisma, TransactionType } from '@prisma/client';
+import { TransactionType } from '@prisma/client';
 
 export interface TransactionEntity {
   id: string;
   userId: string;
   type: TransactionType;
-  amount: Prisma.Decimal;
+  amount: bigint;
   date: Date;
   description: string | null;
   createdAt: Date;

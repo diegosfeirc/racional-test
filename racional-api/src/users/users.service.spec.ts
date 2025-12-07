@@ -255,7 +255,7 @@ describe('UsersService', () => {
           id: 'transaction-1',
           userId: 'user-123',
           type: 'DEPOSIT' as const,
-          amount: new Prisma.Decimal(1000),
+          amount: BigInt(100000), // $1000.00 in cents
           date: new Date('2024-01-01'),
           description: 'Initial deposit',
           createdAt: new Date('2024-01-01'),
@@ -269,8 +269,8 @@ describe('UsersService', () => {
           stockId: 'stock-123',
           type: 'BUY' as const,
           quantity: 10,
-          unitPrice: new Prisma.Decimal(150.5),
-          total: new Prisma.Decimal(1505),
+          unitPrice: BigInt(15050), // $150.50 in cents
+          total: BigInt(150500), // $1505.00 in cents
           status: 'EXECUTED' as const,
           createdAt: new Date('2024-01-02'),
           executedAt: new Date('2024-01-02'),
@@ -278,7 +278,7 @@ describe('UsersService', () => {
             id: 'stock-123',
             symbol: 'AAPL',
             name: 'Apple Inc.',
-            price: new Prisma.Decimal(150.5),
+            price: BigInt(15050), // $150.50 in cents
             createdAt: new Date('2024-01-01'),
             updatedAt: new Date('2024-01-01'),
           },
@@ -313,7 +313,7 @@ describe('UsersService', () => {
         id: `transaction-${i}`,
         userId: 'user-123',
         type: 'DEPOSIT' as const,
-        amount: new Prisma.Decimal(100),
+        amount: BigInt(10000), // $100.00 in cents
         date: new Date(`2024-01-${String(i + 1).padStart(2, '0')}`),
         description: null,
         createdAt: new Date(`2024-01-${String(i + 1).padStart(2, '0')}`),

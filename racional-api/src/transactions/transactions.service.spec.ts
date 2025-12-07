@@ -27,7 +27,7 @@ describe('TransactionsService', () => {
   const mockWallet = {
     id: 'wallet-123',
     userId: 'user-123',
-    balance: new Prisma.Decimal(1000),
+    balance: BigInt(100000), // $1000.00 in cents
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
@@ -74,7 +74,7 @@ describe('TransactionsService', () => {
         id: 'transaction-123',
         userId: 'user-123',
         type: TransactionType.DEPOSIT,
-        amount: new Prisma.Decimal(500),
+        amount: BigInt(50000), // $500.00 in cents
         date: new Date('2024-01-01T10:00:00Z'),
         description: 'Test deposit',
         createdAt: new Date('2024-01-01'),
@@ -92,7 +92,7 @@ describe('TransactionsService', () => {
           create: jest.fn(),
           update: jest.fn().mockResolvedValue({
             ...mockWallet,
-            balance: new Prisma.Decimal(1500),
+            balance: BigInt(150000), // $1500.00 in cents
           }),
         },
         transaction: {
@@ -147,7 +147,7 @@ describe('TransactionsService', () => {
         id: 'transaction-123',
         userId: 'user-123',
         type: TransactionType.WITHDRAWAL,
-        amount: new Prisma.Decimal(200),
+        amount: BigInt(20000), // $200.00 in cents
         date: new Date('2024-01-01T10:00:00Z'),
         description: 'Test withdrawal',
         createdAt: new Date('2024-01-01'),
@@ -165,7 +165,7 @@ describe('TransactionsService', () => {
           create: jest.fn(),
           update: jest.fn().mockResolvedValue({
             ...mockWallet,
-            balance: new Prisma.Decimal(800),
+            balance: BigInt(80000), // $800.00 in cents
           }),
         },
         transaction: {
@@ -328,7 +328,7 @@ describe('TransactionsService', () => {
     it('should throw BadRequestException if insufficient balance for withdrawal', async () => {
       const poorWallet = {
         ...mockWallet,
-        balance: new Prisma.Decimal(100),
+        balance: BigInt(10000), // $100.00 in cents
       };
 
       const mockTransactionClient: MockTransactionClient = {
@@ -394,7 +394,7 @@ describe('TransactionsService', () => {
           id: 'transaction-1',
           userId: 'user-123',
           type: TransactionType.DEPOSIT,
-          amount: new Prisma.Decimal(1000),
+          amount: BigInt(100000), // $1000.00 in cents
           date: new Date('2024-01-01'),
           description: 'Initial deposit',
           createdAt: new Date('2024-01-01'),
