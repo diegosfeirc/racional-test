@@ -237,7 +237,7 @@ La documentación oficial de todos los endpoints está disponible en la ruta `/d
 
 4. **PortfolioHolding como entidad separada**: Permite rastrear el precio promedio de compra de cada acción en cada portafolio, facilitando el cálculo de ganancias/pérdidas.
 
-5. **Decimal para montos**: Se utiliza `Decimal` en lugar de `Float` para evitar problemas de precisión en cálculos financieros.
+5. **Números enteros para montos (BigInt en centavos)**: Todos los montos monetarios (balances, precios de acciones, transacciones) se almacenan como números enteros en centavos usando `BigInt` en lugar de decimales. Esto elimina completamente los problemas de precisión de punto flotante en cálculos financieros, garantiza exactitud en todas las operaciones aritméticas y evita errores de redondeo que podrían causar discrepancias en balances y cálculos de portafolios.
 
 **Diagrama ER**: Ver el diagrama de entidad-relación completo en [assets/racional_api_test.png](./assets/racional_api_test.png).
 
