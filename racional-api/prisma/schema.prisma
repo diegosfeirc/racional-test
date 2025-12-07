@@ -92,7 +92,7 @@ model Order {
   userId       String
   stockId      String
   type         OrderType
-  quantity     Int
+  quantity     Decimal    @db.Decimal(18, 8)
   unitPrice    BigInt
   total        BigInt
   status       OrderStatus @default(PENDING)
@@ -111,7 +111,7 @@ model PortfolioHolding {
   id                String   @id @default(uuid())
   portfolioId       String
   stockId           String
-  quantity          Int
+  quantity          Decimal  @db.Decimal(18, 8)
   averageBuyPrice   BigInt
   updatedAt         DateTime @updatedAt
 

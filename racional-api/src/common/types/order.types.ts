@@ -6,7 +6,7 @@ export interface OrderEntity {
   userId: string;
   stockId: string;
   type: OrderType;
-  quantity: number;
+  quantity: number | Prisma.Decimal;
   unitPrice: bigint | Prisma.Decimal;
   total: bigint | Prisma.Decimal;
   status: OrderStatus;

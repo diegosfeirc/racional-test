@@ -9,7 +9,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderResponseDto } from './dto/order-response.dto';
 import { Prisma, OrderType, OrderStatus } from '@prisma/client';
 import { OrderEntity, OrderWithRelations } from '../common/types/order.types';
-import { dollarsToCents, centsToDollars } from '../common/utils/currency.utils';
+import { centsToDollars } from '../common/utils/currency.utils';
 
 @Injectable()
 export class OrdersService {
@@ -18,10 +18,6 @@ export class OrdersService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createOrderDto: CreateOrderDto): Promise<OrderResponseDto> {
-    const unitPriceInCents = dollarsToCents(createOrderDto.unitPrice);
-    const totalInCents = BigInt(createOrderDto.quantity) * unitPriceInCents;
-    const totalInDollars = createOrderDto.quantity * createOrderDto.unitPrice;
-
     const order = await this.prisma.$transaction(async (tx) => {
       const user = await tx.user.findUnique({
         where: { id: createOrderDto.userId },
@@ -42,6 +38,32 @@ export class OrdersService {
           `Stock with ID ${createOrderDto.stockId} not found`,
         );
       }
+
+      // Get market price and calculate quantity from amount
+      // Convert stock.price to BigInt (it's stored as BigInt in DB)
+      const stockPriceInCents: bigint =
+        typeof stock.price === 'bigint'
+          ? stock.price
+          : BigInt(Number(stock.price));
+      const stockPriceInDollars = centsToDollars(stockPriceInCents);
+
+      // Calculate quantity (allow fractional shares)
+      const quantity = createOrderDto.amount / stockPriceInDollars;
+
+      // Validate minimum purchase (must be greater than 0)
+      if (quantity <= 0) {
+        throw new BadRequestException(
+          `Amount ${createOrderDto.amount} must be greater than 0 to purchase shares at price ${stockPriceInDollars}`,
+        );
+      }
+
+      // Calculate actual total (exact amount, no flooring)
+      const unitPriceInCents = stockPriceInCents;
+      // Convert quantity to number for multiplication, then back to BigInt for cents
+      const totalInCents = BigInt(
+        Math.round(quantity * Number(unitPriceInCents)),
+      );
+      const totalInDollars = centsToDollars(totalInCents);
 
       const portfolio = await tx.portfolio.findUnique({
         where: { id: createOrderDto.portfolioId },
@@ -87,9 +109,10 @@ export class OrdersService {
           },
         });
 
-        if (!holding || holding.quantity < createOrderDto.quantity) {
+        const availableQuantity = Number(holding?.quantity ?? 0);
+        if (!holding || availableQuantity < quantity) {
           this.logger.warn(
-            `Insufficient stock quantity for sell order. User: ${createOrderDto.userId}, Stock: ${createOrderDto.stockId}, Quantity: ${createOrderDto.quantity}`,
+            `Insufficient stock quantity for sell order. User: ${createOrderDto.userId}, Stock: ${createOrderDto.stockId}, Required: ${quantity}, Available: ${availableQuantity}`,
           );
           throw new BadRequestException('Insufficient stock quantity');
         }
@@ -100,7 +123,7 @@ export class OrdersService {
           userId: createOrderDto.userId,
           stockId: createOrderDto.stockId,
           type: createOrderDto.type,
-          quantity: createOrderDto.quantity,
+          quantity: new Prisma.Decimal(quantity),
           unitPrice: Number(unitPriceInCents),
           total: Number(totalInCents),
           status: OrderStatus.EXECUTED,
@@ -122,7 +145,7 @@ export class OrdersService {
           tx,
           portfolio.id,
           createOrderDto.stockId,
-          createOrderDto.quantity,
+          quantity,
           unitPriceInCents,
           true,
         );
@@ -140,7 +163,7 @@ export class OrdersService {
           tx,
           portfolio.id,
           createOrderDto.stockId,
-          createOrderDto.quantity,
+          quantity,
           unitPriceInCents,
           false,
         );
@@ -209,15 +232,17 @@ export class OrdersService {
 
     if (isBuy) {
       if (existingHolding) {
-        const averagePriceBigInt = BigInt(
-          Number(existingHolding.averageBuyPrice),
+        // Convert existing holding quantity to number
+        const existingQuantity = Number(existingHolding.quantity);
+        const averagePriceInCents = Number(existingHolding.averageBuyPrice);
+
+        // Calculate weighted average price
+        const currentTotalInCents = averagePriceInCents * existingQuantity;
+        const newTotalInCents = Number(unitPriceInCents) * quantity;
+        const newQuantity = existingQuantity + quantity;
+        const newAveragePriceInCents = Math.round(
+          (currentTotalInCents + newTotalInCents) / newQuantity,
         );
-        const currentTotal =
-          averagePriceBigInt * BigInt(existingHolding.quantity);
-        const newTotal = unitPriceInCents * BigInt(quantity);
-        const newQuantity = existingHolding.quantity + quantity;
-        const newAveragePriceInCents =
-          (currentTotal + newTotal) / BigInt(newQuantity);
 
         await tx.portfolioHolding.update({
           where: {
@@ -227,8 +252,8 @@ export class OrdersService {
             },
           },
           data: {
-            quantity: newQuantity,
-            averageBuyPrice: Number(newAveragePriceInCents),
+            quantity: new Prisma.Decimal(newQuantity),
+            averageBuyPrice: newAveragePriceInCents,
           },
         });
       } else {
@@ -236,19 +261,21 @@ export class OrdersService {
           data: {
             portfolioId: portfolioId,
             stockId: stockId,
-            quantity: quantity,
+            quantity: new Prisma.Decimal(quantity),
             averageBuyPrice: Number(unitPriceInCents),
           },
         });
       }
     } else {
-      if (!existingHolding || existingHolding.quantity < quantity) {
+      const existingQuantity = Number(existingHolding?.quantity ?? 0);
+
+      if (!existingHolding || existingQuantity < quantity) {
         throw new BadRequestException('Insufficient stock quantity');
       }
 
-      const newQuantity = existingHolding.quantity - quantity;
+      const newQuantity = existingQuantity - quantity;
 
-      if (newQuantity === 0) {
+      if (newQuantity <= 0) {
         await tx.portfolioHolding.delete({
           where: {
             portfolioId_stockId: {
@@ -266,7 +293,7 @@ export class OrdersService {
             },
           },
           data: {
-            quantity: newQuantity,
+            quantity: new Prisma.Decimal(newQuantity),
           },
         });
       }
@@ -281,7 +308,7 @@ export class OrdersService {
       userId: order.userId,
       stockId: order.stockId,
       type: order.type,
-      quantity: order.quantity,
+      quantity: Number(order.quantity),
       unitPrice: centsToDollars(Number(order.unitPrice)),
       total: centsToDollars(Number(order.total)),
       status: order.status,

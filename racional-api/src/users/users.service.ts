@@ -181,7 +181,7 @@ export class UsersService {
       orderType: order.type,
       stockSymbol: order.stock.symbol,
       stockName: order.stock.name,
-      quantity: order.quantity,
+      quantity: Number(order.quantity),
       unitPrice: centsToDollars(Number(order.unitPrice)),
       total: centsToDollars(Number(order.total)),
     }));

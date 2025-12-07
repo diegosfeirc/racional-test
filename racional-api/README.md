@@ -134,8 +134,7 @@ Registra una orden de compra o venta de acciones. Requiere:
 - `stockId`: ID de la acción
 - `portfolioId`: ID del portafolio
 - `type`: Tipo de orden (`BUY` o `SELL`)
-- `quantity`: Cantidad de acciones
-- `unitPrice`: Precio unitario
+- `amount`: Monto en dólares a invertir (para compra) o recibir (para venta). La cantidad de acciones se calculará automáticamente según el precio de mercado actual.
 
 **Ejemplo**:
 ```json
@@ -144,10 +143,11 @@ Registra una orden de compra o venta de acciones. Requiere:
   "stockId": "87654321-fedc-b987-6543-210fedcba987",
   "portfolioId": "2a3b4c5d-6e7f-8091-a2b3-c4d5e6f70819",
   "type": "BUY",
-  "quantity": 10,
-  "unitPrice": 150.50
+  "amount": 1505.0
 }
 ```
+
+**Nota**: El sistema calculará automáticamente la cantidad de acciones basándose en el precio de mercado actual (`stock.price`). Se permiten acciones fraccionarias (por ejemplo, 0.5 acciones, 1.25 acciones, etc.). El monto debe ser mayor que 0 para crear una orden.
 
 ### 3. Editar información personal del usuario
 

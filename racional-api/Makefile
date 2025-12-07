@@ -1,4 +1,4 @@
-.PHONY: help up down build rebuild logs logs-api test test-only dev clean ps shell-api shell-db restart restart-api migrate seed status check-docker
+.PHONY: help up down build build-all rebuild rebuild-all logs logs-api test test-only dev clean ps shell-api shell-db restart restart-api migrate seed status check-docker
 
 # Comando por defecto
 .DEFAULT_GOAL := help
@@ -34,13 +34,23 @@ check-docker: ## Verifica que Docker esté instalado y funcionando
 	}
 	@echo "\033[0;32m✅ Docker está listo\033[0m"
 
-build: check-docker ## Construye las imágenes Docker
+build: check-docker ## Construye las imágenes Docker (solo servicios de desarrollo)
 	@echo "\033[0;33m🔨 Construyendo imágenes Docker...\033[0m"
+	@docker compose -f docker-compose.yml build api
+	@echo "\033[0;32m✅ Imágenes construidas\033[0m"
+
+build-all: check-docker ## Construye todas las imágenes Docker (incluye tests)
+	@echo "\033[0;33m🔨 Construyendo todas las imágenes Docker...\033[0m"
 	@docker compose -f docker-compose.yml build
 	@echo "\033[0;32m✅ Imágenes construidas\033[0m"
 
-rebuild: check-docker ## Reconstruye las imágenes desde cero (sin cache)
+rebuild: check-docker ## Reconstruye las imágenes desde cero (sin cache, solo desarrollo)
 	@echo "\033[0;33m🔨 Reconstruyendo imágenes desde cero...\033[0m"
+	@docker compose -f docker-compose.yml build --no-cache api
+	@echo "\033[0;32m✅ Imágenes reconstruidas\033[0m"
+
+rebuild-all: check-docker ## Reconstruye todas las imágenes desde cero (incluye tests)
+	@echo "\033[0;33m🔨 Reconstruyendo todas las imágenes desde cero...\033[0m"
 	@docker compose -f docker-compose.yml build --no-cache
 	@echo "\033[0;32m✅ Imágenes reconstruidas\033[0m"
 
@@ -72,17 +82,24 @@ logs: check-docker ## Muestra logs de todos los servicios (seguimiento en tiempo
 logs-api: check-docker ## Muestra logs solo de la API
 	@docker compose -f docker-compose.yml logs -f api
 
-test: build ## Ejecuta los tests de integración (independiente de la app)
+test: check-docker ## Ejecuta los tests de integración (independiente de la app)
 	@echo "\033[0;32m🧪 Ejecutando tests de integración...\033[0m"
 	@echo "\033[0;34m   Esto levanta: PostgreSQL de test y ejecuta los tests\033[0m"
-	@docker compose -f docker-compose.yml up --build api-test --abort-on-container-exit
+	@docker compose -f docker-compose.yml build api-test
+	@docker compose -f docker-compose.yml up api-test --abort-on-container-exit
+	@echo "\033[0;33m🧹 Limpiando servicios de test...\033[0m"
+	@docker compose -f docker-compose.yml stop api-test postgres-test 2>/dev/null || true
 	@docker compose -f docker-compose.yml rm -f api-test postgres-test
+	@echo "\033[0;32m✅ Servicios de test limpiados\033[0m"
 
 test-only: check-docker ## Ejecuta tests sin reconstruir (más rápido)
 	@echo "\033[0;32m🧪 Ejecutando tests (sin rebuild)...\033[0m"
 	@echo "\033[0;34m   Esto levanta: PostgreSQL de test y ejecuta los tests\033[0m"
 	@docker compose -f docker-compose.yml up api-test --abort-on-container-exit
+	@echo "\033[0;33m🧹 Limpiando servicios de test...\033[0m"
+	@docker compose -f docker-compose.yml stop api-test postgres-test 2>/dev/null || true
 	@docker compose -f docker-compose.yml rm -f api-test postgres-test
+	@echo "\033[0;32m✅ Servicios de test limpiados\033[0m"
 
 ps: check-docker ## Muestra el estado de los contenedores
 	@docker compose -f docker-compose.yml ps

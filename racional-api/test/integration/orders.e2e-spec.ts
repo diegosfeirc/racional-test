@@ -92,8 +92,7 @@ describe('Orders (e2e)', () => {
           portfolioId: testPortfolioId,
           stockId: testStockId,
           type: 'BUY',
-          quantity: 10,
-          unitPrice: 100.0,
+          amount: 1000.0,
         })
         .expect(201)
         .expect((res) => {
@@ -118,8 +117,7 @@ describe('Orders (e2e)', () => {
           portfolioId: testPortfolioId,
           stockId: testStockId,
           type: 'BUY',
-          quantity: 20,
-          unitPrice: 100.0,
+          amount: 2000.0, // 20 shares × $100
         })
         .expect(201);
 
@@ -131,15 +129,15 @@ describe('Orders (e2e)', () => {
           portfolioId: testPortfolioId,
           stockId: testStockId,
           type: 'SELL',
-          quantity: 5,
-          unitPrice: 110.0,
+          amount: 500.0, // 5 shares × $100
         })
         .expect(201)
         .expect((res) => {
           const body = res.body as OrderResponseDto;
           expect(body.type).toBe('SELL');
           expect(body.quantity).toBe(5);
-          expect(body.total).toBe(550.0);
+          expect(body.unitPrice).toBe(100.0);
+          expect(body.total).toBe(500.0);
         });
     });
 
@@ -193,8 +191,7 @@ describe('Orders (e2e)', () => {
           portfolioId: portfolio.id,
           stockId: stockId,
           type: 'BUY',
-          quantity: 1000,
-          unitPrice: 100.0,
+          amount: 100000.0, // 1000 shares × $100, but user has no balance
         })
         .expect(400);
     });
@@ -207,8 +204,7 @@ describe('Orders (e2e)', () => {
           portfolioId: testPortfolioId,
           stockId: testStockId,
           type: 'BUY',
-          quantity: 10,
-          unitPrice: 100.0,
+          amount: 1000.0,
         })
         .expect(404);
     });
@@ -267,8 +263,7 @@ describe('Orders (e2e)', () => {
           portfolioId: portfolioId,
           stockId: testStockId,
           type: 'BUY',
-          quantity: 5,
-          unitPrice: 100.0,
+          amount: 500.0, // 5 shares × $100
         })
         .expect(201);
 
@@ -335,8 +330,7 @@ describe('Orders (e2e)', () => {
           portfolioId: portfolioId,
           stockId: testStockId,
           type: 'BUY',
-          quantity: 3,
-          unitPrice: 100.0,
+          amount: 300.0, // 3 shares × $100
         })
         .expect(201);
 
@@ -349,7 +343,58 @@ describe('Orders (e2e)', () => {
           const body = res.body as OrderResponseDto;
           expect(body.id).toBe(orderId);
           expect(body.quantity).toBe(3);
+          expect(body.unitPrice).toBe(100.0);
+          expect(body.total).toBe(300.0);
         });
+    });
+
+    it('should return 400 when amount is zero or negative', () => {
+      return request(app.getHttpServer())
+        .post('/orders')
+        .send({
+          userId: testUserId,
+          portfolioId: testPortfolioId,
+          stockId: testStockId,
+          type: 'BUY',
+          amount: 0.0,
+        })
+        .expect(400);
+    });
+
+    it('should allow fractional shares correctly', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/orders')
+        .send({
+          userId: testUserId,
+          portfolioId: testPortfolioId,
+          stockId: testStockId,
+          type: 'BUY',
+          amount: 150.0, // Would be 1.5 shares
+        })
+        .expect(201);
+
+      const body = response.body as OrderResponseDto;
+      expect(body.quantity).toBe(1.5);
+      expect(body.unitPrice).toBe(100.0);
+      expect(body.total).toBe(150.0); // Exact amount: 1.5 * 100
+    });
+
+    it('should allow very small fractional shares', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/orders')
+        .send({
+          userId: testUserId,
+          portfolioId: testPortfolioId,
+          stockId: testStockId,
+          type: 'BUY',
+          amount: 5.0, // Would be 0.05 shares
+        })
+        .expect(201);
+
+      const body = response.body as OrderResponseDto;
+      expect(body.quantity).toBe(0.05);
+      expect(body.unitPrice).toBe(100.0);
+      expect(body.total).toBe(5.0); // Exact amount: 0.05 * 100
     });
   });
 });

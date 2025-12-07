@@ -78,8 +78,7 @@ describe('OrdersService', () => {
       portfolioId: 'portfolio-123',
       stockId: 'stock-123',
       type: OrderType.BUY,
-      quantity: 10,
-      unitPrice: 150.5,
+      amount: 1505.0,
     };
 
     it('should create a buy order successfully', async () => {
@@ -138,7 +137,7 @@ describe('OrdersService', () => {
           create: jest.fn().mockResolvedValue({
             portfolioId: 'portfolio-123',
             stockId: 'stock-123',
-            quantity: 10,
+            quantity: new Prisma.Decimal(10),
             averageBuyPrice: BigInt(15050), // $150.50 in cents
           }),
           update: jest.fn(),
@@ -224,7 +223,7 @@ describe('OrdersService', () => {
     it('should throw BadRequestException if insufficient balance', async () => {
       const poorWallet = {
         ...mockWallet,
-        balance: BigInt(10000), // $100.00 in cents
+        balance: BigInt(10000),
       };
 
       const mockTransactionClient: MockTransactionClient = {
@@ -342,6 +341,221 @@ describe('OrdersService', () => {
         BadRequestException,
       );
     });
+
+    it('should throw BadRequestException if amount is zero or negative', async () => {
+      const zeroAmountDto: CreateOrderDto = {
+        ...createOrderDto,
+        amount: 0.0,
+      };
+
+      const mockTransactionClient: MockTransactionClient = {
+        user: {
+          findUnique: jest.fn().mockResolvedValue(mockUser),
+          create: jest.fn(),
+          update: jest.fn(),
+          findMany: jest.fn(),
+        },
+        stock: {
+          findUnique: jest.fn().mockResolvedValue(mockStock),
+          create: jest.fn(),
+          update: jest.fn(),
+          findMany: jest.fn(),
+        },
+        portfolio: {
+          findUnique: jest.fn().mockResolvedValue(mockPortfolio),
+          create: jest.fn(),
+          update: jest.fn(),
+          findMany: jest.fn(),
+        },
+        wallet: {
+          findUnique: jest.fn(),
+          create: jest.fn(),
+          update: jest.fn(),
+        },
+        order: {
+          findUnique: jest.fn(),
+          create: jest.fn(),
+          findMany: jest.fn(),
+        },
+        transaction: {
+          findUnique: jest.fn(),
+          create: jest.fn(),
+          findMany: jest.fn(),
+        },
+        portfolioHolding: {
+          findUnique: jest.fn(),
+          create: jest.fn(),
+          update: jest.fn(),
+          delete: jest.fn(),
+        },
+      };
+
+      (prismaService.$transaction as jest.Mock).mockImplementation(
+        async <T>(
+          callback: (tx: MockTransactionClient) => Promise<T>,
+        ): Promise<T> => {
+          return callback(mockTransactionClient);
+        },
+      );
+
+      await expect(service.create(zeroAmountDto)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should allow fractional shares correctly', async () => {
+      const fractionalAmountDto: CreateOrderDto = {
+        ...createOrderDto,
+        amount: 1000.0, // Would be 6.644... shares
+      };
+
+      const mockOrder: OrderEntity = {
+        id: 'order-123',
+        userId: 'user-123',
+        stockId: 'stock-123',
+        type: OrderType.BUY,
+        quantity: new Prisma.Decimal('6.644518272425249'), // Exact fractional share
+        unitPrice: BigInt(15050), // $150.50 in cents
+        total: BigInt(100000), // $1000.00 in cents (exact amount)
+        status: OrderStatus.EXECUTED,
+        createdAt: new Date('2024-01-01'),
+        executedAt: new Date('2024-01-01'),
+      };
+
+      const mockTransactionClient: MockTransactionClient = {
+        user: {
+          findUnique: jest.fn().mockResolvedValue(mockUser),
+          create: jest.fn(),
+          update: jest.fn(),
+          findMany: jest.fn(),
+        },
+        stock: {
+          findUnique: jest.fn().mockResolvedValue(mockStock),
+          create: jest.fn(),
+          update: jest.fn(),
+          findMany: jest.fn(),
+        },
+        portfolio: {
+          findUnique: jest.fn().mockResolvedValue(mockPortfolio),
+          create: jest.fn(),
+          update: jest.fn(),
+          findMany: jest.fn(),
+        },
+        transaction: {
+          findUnique: jest.fn(),
+          create: jest.fn(),
+          findMany: jest.fn(),
+        },
+        wallet: {
+          findUnique: jest.fn().mockResolvedValue(mockWallet),
+          create: jest.fn(),
+          update: jest.fn().mockResolvedValue({
+            ...mockWallet,
+            balance: BigInt(909700), // $9097.00 in cents
+          }),
+        },
+        order: {
+          findUnique: jest.fn(),
+          create: jest.fn().mockResolvedValue(mockOrder),
+          findMany: jest.fn(),
+        },
+        portfolioHolding: {
+          findUnique: jest.fn().mockResolvedValue(null),
+          create: jest.fn().mockResolvedValue({
+            portfolioId: 'portfolio-123',
+            stockId: 'stock-123',
+            quantity: new Prisma.Decimal('6.644518272425249'),
+            averageBuyPrice: BigInt(15050), // $150.50 in cents
+          }),
+          update: jest.fn(),
+          delete: jest.fn(),
+        },
+      };
+
+      (prismaService.$transaction as jest.Mock).mockImplementation(
+        async <T>(
+          callback: (tx: MockTransactionClient) => Promise<T>,
+        ): Promise<T> => {
+          return callback(mockTransactionClient);
+        },
+      );
+
+      const result = await service.create(fractionalAmountDto);
+
+      expect(result).toBeDefined();
+      expect(result.quantity).toBeCloseTo(6.644518272425249, 8);
+      expect(result.total).toBe(1000.0); // Exact amount
+      expect(result.unitPrice).toBe(150.5);
+    });
+
+    it('should throw BadRequestException if sell order amount exceeds available shares', async () => {
+      const sellOrderDto: CreateOrderDto = {
+        ...createOrderDto,
+        type: OrderType.SELL,
+        amount: 5000.0, // Would require ~33.22 shares, but user only has 10
+      };
+
+      const existingHolding = {
+        portfolioId: 'portfolio-123',
+        stockId: 'stock-123',
+        quantity: new Prisma.Decimal(10), // User only has 10 shares
+        averageBuyPrice: BigInt(15050),
+      };
+
+      const mockTransactionClient: MockTransactionClient = {
+        user: {
+          findUnique: jest.fn().mockResolvedValue(mockUser),
+          create: jest.fn(),
+          update: jest.fn(),
+          findMany: jest.fn(),
+        },
+        stock: {
+          findUnique: jest.fn().mockResolvedValue(mockStock),
+          create: jest.fn(),
+          update: jest.fn(),
+          findMany: jest.fn(),
+        },
+        portfolio: {
+          findUnique: jest.fn().mockResolvedValue(mockPortfolio),
+          create: jest.fn(),
+          update: jest.fn(),
+          findMany: jest.fn(),
+        },
+        wallet: {
+          findUnique: jest.fn(),
+          create: jest.fn(),
+          update: jest.fn(),
+        },
+        order: {
+          findUnique: jest.fn(),
+          create: jest.fn(),
+          findMany: jest.fn(),
+        },
+        transaction: {
+          findUnique: jest.fn(),
+          create: jest.fn(),
+          findMany: jest.fn(),
+        },
+        portfolioHolding: {
+          findUnique: jest.fn().mockResolvedValue(existingHolding),
+          create: jest.fn(),
+          update: jest.fn(),
+          delete: jest.fn(),
+        },
+      };
+
+      (prismaService.$transaction as jest.Mock).mockImplementation(
+        async <T>(
+          callback: (tx: MockTransactionClient) => Promise<T>,
+        ): Promise<T> => {
+          return callback(mockTransactionClient);
+        },
+      );
+
+      await expect(service.create(sellOrderDto)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
   });
 
   describe('findByUserId', () => {
@@ -352,7 +566,7 @@ describe('OrdersService', () => {
           userId: 'user-123',
           stockId: 'stock-123',
           type: OrderType.BUY,
-          quantity: 10,
+          quantity: new Prisma.Decimal(10),
           unitPrice: new Prisma.Decimal(150.5),
           total: new Prisma.Decimal(1505),
           status: OrderStatus.EXECUTED,
@@ -389,7 +603,7 @@ describe('OrdersService', () => {
         userId: 'user-123',
         stockId: 'stock-123',
         type: OrderType.BUY,
-        quantity: 10,
+        quantity: new Prisma.Decimal(10),
         unitPrice: BigInt(15050), // $150.50 in cents
         total: BigInt(150500), // $1505.00 in cents
         status: OrderStatus.EXECUTED,

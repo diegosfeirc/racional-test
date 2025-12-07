@@ -210,13 +210,14 @@ export class PortfoliosService {
 
     const holdingsWithValue = holdings.map((holding) => {
       const currentPrice = centsToDollars(Number(holding.stock.price));
-      const currentValue = holding.quantity * currentPrice;
+      const quantity = Number(holding.quantity);
+      const currentValue = quantity * currentPrice;
 
       return {
         stockId: holding.stockId,
         stockSymbol: holding.stock.symbol,
         stockName: holding.stock.name,
-        quantity: holding.quantity,
+        quantity: quantity,
         averageBuyPrice: centsToDollars(Number(holding.averageBuyPrice)),
         currentPrice: currentPrice,
         currentValue: currentValue,

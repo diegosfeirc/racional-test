@@ -1,11 +1,4 @@
-import {
-  IsEnum,
-  IsString,
-  IsNotEmpty,
-  IsInt,
-  IsNumber,
-  Min,
-} from 'class-validator';
+import { IsEnum, IsString, IsNotEmpty, IsNumber, Min } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { OrderType } from '@prisma/client';
 
@@ -44,20 +37,12 @@ export class CreateOrderDto {
   type: OrderType;
 
   @ApiProperty({
-    description: 'Cantidad de acciones',
-    example: 10,
-    minimum: 1,
-  })
-  @IsInt()
-  @Min(1)
-  quantity: number;
-
-  @ApiProperty({
-    description: 'Precio unitario de la acción',
-    example: 150.5,
+    description:
+      'Monto en dólares a invertir (para compra) o recibir (para venta). La cantidad de acciones se calculará automáticamente según el precio de mercado actual.',
+    example: 1505.0,
     minimum: 0.01,
   })
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0.01)
-  unitPrice: number;
+  amount: number;
 }
