@@ -1,0 +1,107 @@
+services:
+  # PostgreSQL for development
+  postgres:
+    image: postgres:16-alpine
+    container_name: racional-postgres
+    environment:
+      POSTGRES_USER: racional
+      POSTGRES_PASSWORD: racional_password
+      POSTGRES_DB: racional_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U racional -d racional_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - racional-network
+
+  # API service for development
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: racional-api
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://racional:racional_password@postgres:5432/racional_db?schema=public
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        echo "Waiting for PostgreSQL to be ready..."
+        sh ./scripts/wait-for-postgres.sh postgres 5432 racional racional_db racional_password
+        echo "Running migrations..."
+        sh ./scripts/migrate.sh
+        echo "Starting API..."
+        node dist/src/main.js
+    volumes:
+      - ./scripts:/app/scripts:ro
+    networks:
+      - racional-network
+    restart: unless-stopped
+
+  # PostgreSQL for tests (ephemeral)
+  postgres-test:
+    image: postgres:16-alpine
+    container_name: racional-postgres-test
+    environment:
+      POSTGRES_USER: racional_test
+      POSTGRES_PASSWORD: racional_test_password
+      POSTGRES_DB: racional_test_db
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U racional_test -d racional_test_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - racional-network
+
+  # Test service (runs tests and exits)
+  api-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: test
+    container_name: racional-api-test
+    environment:
+      NODE_ENV: test
+      PORT: 3001
+      DATABASE_URL: postgresql://racional_test:racional_test_password@postgres-test:5432/racional_test_db?schema=public
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        echo "Waiting for PostgreSQL test database to be ready..."
+        sh ./scripts/wait-for-postgres.sh postgres-test 5432 racional_test racional_test_db racional_test_password
+        echo "Running migrations on test database..."
+        export DATABASE_URL=postgresql://racional_test:racional_test_password@postgres-test:5432/racional_test_db?schema=public
+        sh ./scripts/migrate.sh
+        echo "Running integration tests..."
+        sh ./scripts/run-tests.sh
+    volumes:
+      - ./scripts:/app/scripts:ro
+      - ./test:/app/test:ro
+    networks:
+      - racional-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  racional-network:
+    driver: bridge
+

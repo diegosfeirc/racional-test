@@ -57,6 +57,17 @@ export class PortfoliosService {
     createPortfolioDto: CreatePortfolioDto,
   ): Promise<PortfolioResponseDto> {
     try {
+      // Verify user exists before creating portfolio
+      const user = await this.prisma.user.findUnique({
+        where: { id: createPortfolioDto.userId },
+      });
+
+      if (!user) {
+        throw new NotFoundException(
+          `User with ID ${createPortfolioDto.userId} not found`,
+        );
+      }
+
       const portfolio = await this.prisma.portfolio.create({
         data: {
           userId: createPortfolioDto.userId,
@@ -72,6 +83,9 @@ export class PortfoliosService {
       );
       return this.mapToResponseDto(portfolio);
     } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2003') {
           throw new NotFoundException(
