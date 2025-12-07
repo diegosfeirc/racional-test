@@ -1,5 +1,4 @@
-# racional-test
-Racional Technical Test
+# Racional Technical Test
 
 ## Descripción del Proyecto
 

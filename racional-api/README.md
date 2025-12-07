@@ -11,6 +11,15 @@ Racional API es una aplicación backend que proporciona endpoints para:
 - Administración de portafolios de inversión
 - Consulta de balances y movimientos
 
+## Índice
+
+- [Descripción](#descripción)
+- [Instrucciones para ejecutar la API](#instrucciones-para-ejecutar-la-api)
+- [Data Seed](#data-seed)
+- [Rutas de la API](#rutas-de-la-api)
+- [Modelo de Datos](#modelo-de-datos)
+- [Uso de IA](#uso-de-ia)
+
 ## Instrucciones para ejecutar la API
 
 ### Prerrequisitos
@@ -19,8 +28,6 @@ Racional API es una aplicación backend que proporciona endpoints para:
 - Make
 
 ### Ejecutar con Make
-
-El comando `make up` es la forma más sencilla de levantar toda la aplicación:
 
 ```bash
 make up
