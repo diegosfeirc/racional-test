@@ -26,19 +26,23 @@ El comando `make up` es la forma más sencilla de levantar toda la aplicación:
 make up
 ```
 
-**¿Qué hace `make up`?**
+**¿Qué hace este `make up`?**
 
-Este comando:
 1. Verifica que Docker esté instalado y funcionando
 2. Construye las imágenes Docker necesarias
-3. Levanta todos los servicios en contenedores:
+3. Ejecuta los tests de integración primero:
+   - Levanta una base de datos PostgreSQL temporal para tests (puerto 5433)
+   - Ejecuta las migraciones en la base de datos de tests
+   - Ejecuta todos los tests de integración
+4. **Solo si los tests pasan exitosamente**, levanta los servicios de desarrollo:
    - **PostgreSQL**: Base de datos en el puerto 5432
    - **API**: Servidor NestJS en el puerto 3000
-   - **Tests**: Ejecuta automáticamente los tests de integración
-4. Ejecuta automáticamente las migraciones de la base de datos
-5. Ejecuta el seed para poblar la base de datos con datos iniciales
+5. Ejecuta automáticamente las migraciones en la base de datos de desarrollo
+6. Ejecuta el seed para poblar la base de datos con datos iniciales
 
-Una vez ejecutado, la API estará disponible en:
+**Importante**: Si los tests de integración fallan, los servicios de desarrollo (API y PostgreSQL) **no se iniciarán**, garantizando que solo se ejecute código que ha pasado todas las pruebas.
+
+Una vez ejecutado exitosamente, la API estará disponible en:
 - **API**: http://localhost:3000
 - **Documentación Swagger**: http://localhost:3000/docs
 - **PostgreSQL**: localhost:5432
