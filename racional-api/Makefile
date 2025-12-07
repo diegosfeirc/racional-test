@@ -61,7 +61,7 @@ rebuild: check-docker ## Reconstruye las imágenes desde cero (sin cache)
 up: build ## Levanta todos los servicios (API + tests automáticos)
 	@echo "$(GREEN)🚀 Levantando todos los servicios...$(NC)"
 	@echo "$(BLUE)   Esto incluye: PostgreSQL, API y tests de integración$(NC)"
-	@$(COMPOSE) -f $(COMPOSE_FILE) up
+	@$(COMPOSE) -f $(COMPOSE_FILE) up -d
 
 dev: build ## Levanta solo servicios de desarrollo (sin tests)
 	@echo "$(GREEN)🚀 Levantando servicios de desarrollo...$(NC)"

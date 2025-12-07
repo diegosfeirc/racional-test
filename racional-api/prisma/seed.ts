@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
  */
 const SEED_DATA = {
   user: {
-    id: 'user-123',
+    id: 'a1b2c3d4-e5f6-7890-1234-567890abcdef',
     email: 'usuario@example.com',
     firstName: 'Juan',
     lastName: 'Pérez',
@@ -15,15 +15,15 @@ const SEED_DATA = {
     updatedAt: new Date('2024-12-04T10:00:00Z'),
   },
   wallet: {
-    id: 'wallet-123',
-    userId: 'user-123',
+    id: '9f8e7d6c-5b4a-3210-fedc-ba9876543210',
+    userId: 'a1b2c3d4-e5f6-7890-1234-567890abcdef',
     balance: 0,
     createdAt: new Date('2024-12-04T10:00:00Z'),
     updatedAt: new Date('2024-12-04T10:00:00Z'),
   },
   portfolio: {
-    id: 'portfolio-123',
-    userId: 'user-123',
+    id: '2a3b4c5d-6e7f-8091-a2b3-c4d5e6f70819',
+    userId: 'a1b2c3d4-e5f6-7890-1234-567890abcdef',
     name: 'Mi portafolio',
     description: 'Portafolio de inversión a largo plazo',
     createdAt: new Date('2024-12-04T10:00:00Z'),
@@ -31,7 +31,7 @@ const SEED_DATA = {
   },
   stocks: [
     {
-      id: 'stock-1',
+      id: '87654321-fedc-b987-6543-210fedcba987',
       symbol: 'AAPL',
       name: 'Apple Inc.',
       price: 150.5,
@@ -39,7 +39,7 @@ const SEED_DATA = {
       updatedAt: new Date('2024-12-04T10:00:00Z'),
     },
     {
-      id: 'stock-2',
+      id: '10293847-5645-3421-a0b9-c8d7e6f54321',
       symbol: 'TSLA',
       name: 'Tesla Inc.',
       price: 175.5,
@@ -47,7 +47,7 @@ const SEED_DATA = {
       updatedAt: new Date('2024-12-04T10:00:00Z'),
     },
     {
-      id: 'stock-3',
+      id: '7c8d9e0f-1a2b-3c4d-5e6f-7890fedcba98',
       symbol: 'META',
       name: 'Meta Inc.',
       price: 215.5,
