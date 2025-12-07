@@ -219,3 +219,13 @@ La documentación oficial de todos los endpoints está disponible en la ruta `/d
 4. **PortfolioHolding como entidad separada**: Permite rastrear el precio promedio de compra de cada acción en cada portafolio, facilitando el cálculo de ganancias/pérdidas.
 
 5. **Decimal para montos**: Se utiliza `Decimal` en lugar de `Float` para evitar problemas de precisión en cálculos financieros.
+
+## Uso de IA
+
+### Usos principales (Gemini 3 + Cursor)
+
+1. **Planificación del Stack**: Le dí el contexto del desafío a Gemini, junto al contexto de las tecnologías que yo manejo, para conversar qué tecnologías serían las más apropiadas para desarrollar la tarea.
+
+2. **Planificación del modelo de datos**: Conversé mucho con Gemini sobre el modelo de datos, las tablas que quería implementar, los beneficios/desventajas de lo que yo propuse en un inicio y cómo mejorarlo.
+
+3. **Desarrollo de la API**: Para el desarrollo, testeo y perfeccionamiento del código, Cursor fue una tremenda ayuda, para dejar la aplicación de la mejor forma posible, usando el modo Ask para discutir nuevas features; el modo Plan para planificar bien las implementaciones y resolver dudas; y el modo Agent para ejecutar las implementaciones planificadas.
