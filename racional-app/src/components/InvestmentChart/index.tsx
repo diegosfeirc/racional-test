@@ -78,7 +78,7 @@ const InvestmentChart = () => {
         <div className="chart-summary">
           <div className="chart-summary-item">
             <div className="chart-summary-content">
-              <p className="chart-summary-label">Total Inversiones</p>
+              <p className="chart-summary-label">Valor Portafolio</p>
               <p 
                 className="chart-summary-value"
                 style={{ color: CHART_STYLES.line.stroke }}
@@ -284,7 +284,7 @@ const InvestmentChart = () => {
                 <Line
                   type="monotone"
                   dataKey="contributions"
-                  name="Total Contribuciones"
+                  name="Total Depósitos"
                   stroke={CHART_STYLES.contributionsLine.stroke}
                   strokeWidth={CHART_STYLES.contributionsLine.strokeWidth}
                   dot={false}
@@ -308,14 +308,14 @@ const InvestmentChart = () => {
                 <line x1="0" y1="7" x2="14" y2="7" stroke={CHART_STYLES.line.stroke} strokeWidth="2" />
               </svg>
               <span className="chart-legend-text" style={{ color: CHART_STYLES.line.stroke }}>
-                Total Inversiones
+                Valor Portafolio
               </span>
             </li>
             <li className="chart-legend-item">
               <svg width="14" height="14" className="chart-legend-icon">
                 <line x1="0" y1="7" x2="14" y2="7" stroke={CHART_STYLES.contributionsLine.stroke} strokeWidth="2" />
               </svg>
-              <span className="chart-legend-text">Total Contribuciones</span>
+              <span className="chart-legend-text">Total Depósitos</span>
             </li>
           </ul>
         )}

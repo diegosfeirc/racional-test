@@ -69,7 +69,7 @@ export const filterUniquePayloads = <T extends Payload<number, NameType>>(
  */
 export const getDataKeyLabel = (dataKey: string | number | undefined): string => {
   if (dataKey === 'contributions') {
-    return 'Contribuciones';
+    return 'Total Depósitos';
   }
   if (dataKey === 'value') {
     return 'Valor del portafolio';
