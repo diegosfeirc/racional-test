@@ -33,4 +33,4 @@ cd racional-app
 Las instrucciones específicas para ejecutar cada aplicación se encuentran en sus respectivos READMEs:
 
 - **[Instrucciones de racional-api](./racional-api/README.md)**: Contiene toda la documentación para ejecutar la API, incluyendo prerrequisitos, comandos Docker, endpoints disponibles y más.
-- **[Instrucciones de racional-app](./racional-app/README.md)**: Contiene la documentación para ejecutar la aplicación frontend.
+- **[Instrucciones de racional-app](./racional-app/README.md)**: Contiene la documentación para ejecutar la aplicación frontend, incluyendo descripción de los gráficos y páginas implementadas y toma de decisiones.
