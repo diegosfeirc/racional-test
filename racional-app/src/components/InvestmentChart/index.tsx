@@ -6,9 +6,9 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from 'recharts';
+import { useState, useEffect } from 'react';
 import { useInvestmentChart } from '../../hooks/investment/useInvestmentChart';
 import {
   calculateProfit,
@@ -22,12 +22,18 @@ import {
 import './styles.css';
 import { CHART_STYLES } from './chart.styles';
 
-interface LegendEntry {
-  value?: string;
-  color?: string;
-}
-
 const InvestmentChart = () => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   const {
     loading,
     error,
@@ -84,7 +90,7 @@ const InvestmentChart = () => {
           
           <div className="chart-summary-item">
             <div className="chart-summary-content">
-              <p className="chart-summary-label">Contribuciones totales</p>
+              <p className="chart-summary-label">Total Depósitos</p>
               <p 
                 className="chart-summary-value"
                 style={{ color: CHART_STYLES.contributionsLine.stroke }}
@@ -105,7 +111,7 @@ const InvestmentChart = () => {
           
           <div className="chart-summary-item">
             <div className="chart-summary-content">
-              <p className="chart-summary-label">Retorno en el tiempo</p>
+              <p className="chart-summary-label">Retorno total</p>
               <p className={`chart-summary-value ${parseFloat(returnPercent) >= 0 ? 'positive' : 'negative'}`}>
                 {returnPercent}%
               </p>
@@ -115,7 +121,7 @@ const InvestmentChart = () => {
       </div>
 
       <div className="chart-evolution-section">
-        {/* Selector de período */}
+        {/* Selector de período - Desktop */}
         <div className="chart-period-selector">
           {timeframes.map((timeframe) => (
             <button
@@ -129,13 +135,29 @@ const InvestmentChart = () => {
             </button>
           ))}
         </div>
+        
+        {/* Selector de período - Mobile */}
+        <select
+          className="chart-period-select"
+          value={selectedTimeframe}
+          onChange={(e) => setSelectedTimeframe(e.target.value as typeof selectedTimeframe)}
+        >
+          {timeframes.map((timeframe) => (
+            <option key={timeframe.value} value={timeframe.value}>
+              {timeframe.label}
+            </option>
+          ))}
+        </select>
 
         <div className="chart-wrapper">
           {filteredChartData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <ComposedChart
                 data={filteredChartData}
-                margin={CHART_STYLES.margin}
+                margin={isMobile 
+                  ? { top: 20, right: 5, left: 25, bottom: 20 }
+                  : CHART_STYLES.margin
+                }
               >
                 <defs>
                   <linearGradient id={CHART_STYLES.area.gradientId} x1="0" y1="0" x2="0" y2="1">
@@ -151,13 +173,21 @@ const InvestmentChart = () => {
                 <XAxis
                   dataKey="date"
                   stroke={CHART_STYLES.axis.stroke}
-                  style={CHART_STYLES.axis.style}
-                  tick={{ fill: CHART_STYLES.axis.stroke }}
+                  style={isMobile ? { fontSize: '10px' } : CHART_STYLES.axis.style}
+                  tick={{ fill: CHART_STYLES.axis.stroke, fontSize: isMobile ? 10 : 12 }}
                   ticks={selectedTimeframe === '24h' ? [] : (xAxisTicks.length > 0 ? xAxisTicks : undefined)}
                   tickFormatter={formatXAxisTick}
                   interval={selectedTimeframe === '24h' ? 'preserveStartEnd' : 0}
                   minTickGap={
-                    selectedTimeframe === '24h' 
+                    isMobile
+                      ? selectedTimeframe === '24h'
+                        ? 40
+                        : selectedTimeframe === '1M' || selectedTimeframe === 'MTD'
+                        ? 60
+                        : selectedTimeframe === 'YTD'
+                        ? 80
+                        : 50
+                      : selectedTimeframe === '24h' 
                       ? 40 
                       : selectedTimeframe === '1M' || selectedTimeframe === 'MTD'
                       ? 50 
@@ -165,13 +195,29 @@ const InvestmentChart = () => {
                       ? 60
                       : 30
                   }
+                  angle={isMobile ? -45 : 0}
+                  textAnchor={isMobile ? 'end' : 'middle'}
+                  height={isMobile ? 60 : 30}
                 />
                 <YAxis
                   stroke={CHART_STYLES.axis.stroke}
-                  style={CHART_STYLES.axis.style}
-                  tick={{ fill: CHART_STYLES.axis.stroke }}
-                  tickFormatter={formatYAxisTick}
+                  style={isMobile ? { fontSize: '10px' } : CHART_STYLES.axis.style}
+                  tick={{ fill: CHART_STYLES.axis.stroke, fontSize: isMobile ? 9 : 12 }}
+                  tickFormatter={(value) => {
+                    if (isMobile) {
+                      // Formato más compacto para móviles
+                      if (value >= 1000000) {
+                        return `$${(value / 1000000).toFixed(1)}M`;
+                      }
+                      if (value >= 1000) {
+                        return `$${(value / 1000).toFixed(0)}k`;
+                      }
+                      return `$${Math.round(value)}`;
+                    }
+                    return formatYAxisTick(value);
+                  }}
                   domain={['auto', 'auto']}
+                  width={isMobile ? 28 : 50}
                 />
                 <Tooltip
                   contentStyle={CHART_STYLES.tooltip}
@@ -245,39 +291,6 @@ const InvestmentChart = () => {
                   activeDot={CHART_STYLES.contributionsActiveDot}
                   connectNulls={false}
                 />
-                <Legend 
-                  wrapperStyle={{ paddingTop: '1rem' }}
-                  iconType="line"
-                  content={({ payload }) => {
-                    if (!payload) return null;
-                    
-                    const investments = (payload as LegendEntry[]).find(e => e.value === 'Total Inversiones');
-                    const contributions = (payload as LegendEntry[]).find(e => e.value === 'Total Contribuciones');
-                    
-                    return (
-                      <ul className="chart-legend-list">
-                        {investments && (
-                          <li className="chart-legend-item">
-                            <svg width="14" height="14" className="chart-legend-icon">
-                              <line x1="0" y1="7" x2="14" y2="7" stroke={investments.color} strokeWidth="2" />
-                            </svg>
-                            <span className="chart-legend-text" style={{ color: CHART_STYLES.line.stroke }}>
-                              {investments.value}
-                            </span>
-                          </li>
-                        )}
-                        {contributions && (
-                          <li className="chart-legend-item">
-                            <svg width="14" height="14" className="chart-legend-icon">
-                              <line x1="0" y1="7" x2="14" y2="7" stroke={contributions.color} strokeWidth="2" />
-                            </svg>
-                            <span className="chart-legend-text">{contributions.value}</span>
-                          </li>
-                        )}
-                      </ul>
-                    );
-                  }}
-                />
               </ComposedChart>
             </ResponsiveContainer>
           ) : (
@@ -286,6 +299,26 @@ const InvestmentChart = () => {
             </div>
           )}
         </div>
+        
+        {/* Leyenda fuera del wrapper del gráfico */}
+        {filteredChartData.length > 0 && (
+          <ul className="chart-legend-list">
+            <li className="chart-legend-item">
+              <svg width="14" height="14" className="chart-legend-icon">
+                <line x1="0" y1="7" x2="14" y2="7" stroke={CHART_STYLES.line.stroke} strokeWidth="2" />
+              </svg>
+              <span className="chart-legend-text" style={{ color: CHART_STYLES.line.stroke }}>
+                Total Inversiones
+              </span>
+            </li>
+            <li className="chart-legend-item">
+              <svg width="14" height="14" className="chart-legend-icon">
+                <line x1="0" y1="7" x2="14" y2="7" stroke={CHART_STYLES.contributionsLine.stroke} strokeWidth="2" />
+              </svg>
+              <span className="chart-legend-text">Total Contribuciones</span>
+            </li>
+          </ul>
+        )}
       </div>
     </div>
   );

@@ -76,8 +76,27 @@
 
 @media (max-width: 768px) {
   .chart-summary {
-    grid-template-columns: 1fr;
-    gap: 1rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .chart-summary {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.625rem;
+  }
+  
+  .chart-summary-item {
+    padding: 0.625rem;
+  }
+  
+  .chart-summary-label {
+    font-size: 0.625rem;
+  }
+  
+  .chart-summary-value {
+    font-size: 0.9375rem;
   }
 }
 
@@ -128,17 +147,16 @@
 }
 
 .chart-summary-label {
-  font-size: 0.875rem;
   color: #6B7280;
   margin: 0;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.025em;
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
 }
 
 .chart-summary-value {
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   font-weight: 700;
   color: #111827;
   margin: 0;
@@ -148,7 +166,7 @@
 
 @media (max-width: 640px) {
   .chart-summary-value {
-    font-size: 1.125rem;
+    font-size: 1rem;
   }
 }
 
@@ -185,6 +203,10 @@
   flex-wrap: wrap;
 }
 
+.chart-period-select {
+  display: none;
+}
+
 .chart-period-button {
   background: none;
   border: none;
@@ -219,6 +241,44 @@
   height: 2px;
   background: linear-gradient(90deg, #8532d9 0%, #6d28a8 100%);
   border-radius: 2px 2px 0 0;
+}
+
+@media (max-width: 768px) {
+  .chart-period-selector {
+    display: none;
+  }
+  
+  .chart-period-select {
+    display: block;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #111827;
+    background-color: #ffffff;
+    border: 1px solid #E5E7EB;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238532d9' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 12px;
+    padding-right: 2.5rem;
+    transition: all 0.2s ease;
+  }
+  
+  .chart-period-select:hover {
+    border-color: #8532d9;
+    background-color: rgba(133, 50, 217, 0.05);
+  }
+  
+  .chart-period-select:focus {
+    outline: none;
+    border-color: #8532d9;
+    box-shadow: 0 0 0 3px rgba(133, 50, 217, 0.1);
+  }
 }
 
 .chart-return-section {
@@ -291,11 +351,17 @@
 @media (max-width: 640px) {
   .chart-wrapper {
     min-height: 240px;
-    padding: 0.5rem;
+    padding: 0.5rem 0.25rem;
   }
   
   .chart-wrapper > div {
     height: 240px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .chart-wrapper {
+    padding: 0.625rem 0.25rem;
   }
 }
 
@@ -481,8 +547,16 @@
   justify-content: center;
   gap: 1.5rem;
   list-style: none;
-  margin: 0;
+  margin: 1rem 0 0 0;
   padding: 0;
+}
+
+@media (max-width: 768px) {
+  .chart-legend-list {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: center;
+  }
 }
 
 .chart-legend-item {

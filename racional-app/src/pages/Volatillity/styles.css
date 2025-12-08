@@ -61,13 +61,34 @@
 
 @media (max-width: 768px) {
   .volatility-container {
-    padding: 1.25rem 0.75rem;
+    padding: 1rem 0.75rem;
+    height: calc(100vh - 60px);
+  }
+  
+  .volatility-content {
+    gap: 0.5rem;
   }
 }
 
 @media (max-width: 640px) {
   .volatility-container {
-    padding: 1rem 0.5rem;
+    padding: 0.75rem 0.5rem;
+    height: calc(100vh - 60px);
+  }
+  
+  .volatility-content {
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .volatility-container {
+    padding: 0.5rem 0.25rem;
+    height: calc(100vh - 50px);
+  }
+  
+  .volatility-content {
+    gap: 0.25rem;
   }
 }
 
