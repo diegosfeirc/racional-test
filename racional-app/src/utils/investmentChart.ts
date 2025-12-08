@@ -65,6 +65,28 @@ export const filterUniquePayloads = <T extends Payload<number, NameType>>(
 };
 
 /**
+ * Calcula la Moving Average (promedio móvil) para un array de datos
+ */
+export const calculateMovingAverage = (
+  data: number[],
+  period: number
+): (number | undefined)[] => {
+  if (data.length === 0 || period <= 0 || period > data.length) {
+    return [];
+  }
+
+  const ma: (number | undefined)[] = new Array(data.length).fill(undefined);
+  
+  for (let i = period - 1; i < data.length; i++) {
+    const slice = data.slice(i - period + 1, i + 1);
+    const sum = slice.reduce((acc, val) => acc + val, 0);
+    ma[i] = sum / period;
+  }
+  
+  return ma;
+};
+
+/**
  * Obtiene el nombre legible para un dataKey del gráfico
  */
 export const getDataKeyLabel = (dataKey: string | number | undefined): string => {
@@ -73,6 +95,15 @@ export const getDataKeyLabel = (dataKey: string | number | undefined): string =>
   }
   if (dataKey === 'value') {
     return 'Valor del portafolio';
+  }
+  if (dataKey === 'ma7') {
+    return 'MA (7)';
+  }
+  if (dataKey === 'ma25') {
+    return 'MA (25)';
+  }
+  if (dataKey === 'ma99') {
+    return 'MA (99)';
   }
   return String(dataKey ?? '');
 };

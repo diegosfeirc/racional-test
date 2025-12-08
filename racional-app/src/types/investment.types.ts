@@ -30,4 +30,7 @@ export interface ChartDataPoint {
   contributions: number; // Costo base / Principal
   profit: number; // value - contributions (para cálculos y visualización)
   timestamp: number;
+  ma7?: number; // Moving Average de 7 días
+  ma25?: number; // Moving Average de 25 días
+  ma99?: number; // Moving Average de 99 días
 }

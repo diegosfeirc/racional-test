@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { format, getDate, startOfYear, startOfMonth } from 'date-fns';
 import { useInvestmentEvolution } from './useInvestmentEvolution';
+import { calculateMovingAverage } from '../../utils/investmentChart';
 import type { ChartDataPoint, FirestoreDataPoint } from '../../types/investment.types';
 import type { UseInvestmentChartReturn } from '../interfaces';
 
@@ -16,8 +17,6 @@ export type Timeframe =
 
 /**
  * Calcula el timestamp del inicio del año actual (1 de enero a las 00:00:00)
- * @param referenceDate - Fecha de referencia (por defecto: fecha actual)
- * @returns Timestamp en milisegundos del inicio del año
  */
 const getYearStartTimestamp = (referenceDate: Date = new Date()): number => {
   return startOfYear(referenceDate).getTime();
@@ -25,8 +24,6 @@ const getYearStartTimestamp = (referenceDate: Date = new Date()): number => {
 
 /**
  * Calcula el timestamp del inicio del mes actual (día 1 a las 00:00:00)
- * @param referenceDate - Fecha de referencia (por defecto: fecha actual)
- * @returns Timestamp en milisegundos del inicio del mes
  */
 const getMonthStartTimestamp = (referenceDate: Date = new Date()): number => {
   return startOfMonth(referenceDate).getTime();
@@ -72,14 +69,30 @@ export const useInvestmentChart = (
       .sort((a: ChartDataPoint, b: ChartDataPoint) => a.timestamp - b.timestamp);
   }, [data]);
 
-
-  // Filtrar datos según el timeframe seleccionado
-  const filteredChartData = useMemo((): ChartDataPoint[] => {
+  // Calcular las 3 Moving Averages fijas sobre TODOS los datos históricos
+  const allChartDataWithMA = useMemo((): ChartDataPoint[] => {
     if (allChartData.length === 0) return [];
     
-    if (selectedTimeframe === 'all') return allChartData;
+    const values = allChartData.map(point => point.value);
+    const ma7Values = calculateMovingAverage(values, 7);
+    const ma25Values = calculateMovingAverage(values, 25);
+    const ma99Values = calculateMovingAverage(values, 99);
     
-    const lastTimestamp = allChartData[allChartData.length - 1]?.timestamp;
+    return allChartData.map((point, index) => ({
+      ...point,
+      ma7: ma7Values[index],
+      ma25: ma25Values[index],
+      ma99: ma99Values[index],
+    }));
+  }, [allChartData]);
+
+  // Filtrar los datos con MA ya calculada según el timeframe
+  const chartDataWithMA = useMemo((): ChartDataPoint[] => {
+    if (allChartDataWithMA.length === 0) return [];
+    
+    if (selectedTimeframe === 'all') return allChartDataWithMA;
+    
+    const lastTimestamp = allChartDataWithMA[allChartDataWithMA.length - 1]?.timestamp;
     if (!lastTimestamp) return [];
     
     let startTimestamp: number;
@@ -87,39 +100,37 @@ export const useInvestmentChart = (
     
     switch (selectedTimeframe) {
       case '24h':
-        startTimestamp = lastTimestamp - (24 * 60 * 60 * 1000); // 24 horas en milisegundos
+        startTimestamp = lastTimestamp - (24 * 60 * 60 * 1000);
         break;
       case '7d':
-        startTimestamp = lastTimestamp - (7 * 24 * 60 * 60 * 1000); // 7 días
+        startTimestamp = lastTimestamp - (7 * 24 * 60 * 60 * 1000);
         break;
       case '1M':
-        startTimestamp = lastTimestamp - (30 * 24 * 60 * 60 * 1000); // ~30 días (1 mes)
+        startTimestamp = lastTimestamp - (30 * 24 * 60 * 60 * 1000);
         break;
       case '3M':
-        startTimestamp = lastTimestamp - (90 * 24 * 60 * 60 * 1000); // ~90 días (3 meses)
+        startTimestamp = lastTimestamp - (90 * 24 * 60 * 60 * 1000);
         break;
       case '6M':
-        startTimestamp = lastTimestamp - (180 * 24 * 60 * 60 * 1000); // ~180 días (6 meses)
+        startTimestamp = lastTimestamp - (180 * 24 * 60 * 60 * 1000);
         break;
       case 'MTD':
-        // Mes hasta la fecha: desde el inicio del mes actual hasta hoy
         startTimestamp = getMonthStartTimestamp(lastDate);
         break;
       case 'YTD':
-        // Año hasta la fecha: desde el inicio del año actual hasta hoy
         startTimestamp = getYearStartTimestamp(lastDate);
         break;
       default:
-        return allChartData;
+        return allChartDataWithMA;
     }
     
-    return allChartData.filter(point => point.timestamp >= startTimestamp);
-  }, [allChartData, selectedTimeframe]);
+    return allChartDataWithMA.filter(point => point.timestamp >= startTimestamp);
+  }, [allChartDataWithMA, selectedTimeframe]);
 
 
   // Calcular qué ticks mostrar según el timeframe
   const xAxisTicks = useMemo(() => {
-    if (filteredChartData.length === 0) return [];
+    if (chartDataWithMA.length === 0) return [];
     
     const ticks: string[] = [];
     const seenMonths = new Set<string>();
@@ -127,7 +138,7 @@ export const useInvestmentChart = (
     let dayCount = 0;
     let lastDayKey = '';
 
-    filteredChartData.forEach((point) => {
+    chartDataWithMA.forEach((point) => {
       const date = new Date(point.timestamp);
       const day = getDate(date);
       const monthKey = format(date, 'yyyy-MM');
@@ -195,7 +206,7 @@ export const useInvestmentChart = (
     });
 
     return ticks;
-  }, [filteredChartData, selectedTimeframe]);
+  }, [chartDataWithMA, selectedTimeframe]);
 
 
   // Formatear los ticks según el timeframe
@@ -240,11 +251,11 @@ export const useInvestmentChart = (
 
   
   // Calcular estadísticas basadas en los datos FILTRADOS
-  const currentValue: number = filteredChartData.length > 0 
-    ? filteredChartData[filteredChartData.length - 1]?.value || 0 
+  const currentValue: number = chartDataWithMA.length > 0 
+    ? chartDataWithMA[chartDataWithMA.length - 1]?.value || 0 
     : 0;
-  const currentContributions: number = filteredChartData.length > 0 
-    ? filteredChartData[filteredChartData.length - 1]?.contributions || 0 
+  const currentContributions: number = chartDataWithMA.length > 0 
+    ? chartDataWithMA[chartDataWithMA.length - 1]?.contributions || 0 
     : 0;
   
   // Ganancias reales = portfolioValue - contributions
@@ -269,7 +280,7 @@ export const useInvestmentChart = (
   return {
     loading,
     error,
-    filteredChartData,
+    filteredChartData: chartDataWithMA,
     xAxisTicks,
     currentValue,
     totalGain,

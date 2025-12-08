@@ -81,6 +81,11 @@ Esta página muestra un gráfico interactivo de la evolución del portafolio de 
   - **Área con gradiente**: Representa el valor total del portafolio a lo largo del tiempo
   - **Línea de inversiones**: Muestra la evolución del valor total de las inversiones
   - **Línea de contribuciones**: Indica el total de depósitos realizados
+  - **Moving Averages (MA)**: Tres líneas de promedio móvil calculadas sobre todos los datos históricos:
+    - MA(7): Promedio móvil de 7 días (amarillo)
+    - MA(25): Promedio móvil de 25 días (rosado)
+    - MA(99): Promedio móvil de 99 días (verde/cyan)
+  - **Toggle de MAs**: Control en la esquina superior derecha para mostrar/ocultar las líneas de Moving Average
 - **Selector de período**: Permite filtrar los datos por diferentes rangos temporales:
   - 24 horas
   - 1 mes

@@ -24,6 +24,7 @@ import { CHART_STYLES } from './chart.styles';
 
 const InvestmentChart = () => {
   const [isMobile, setIsMobile] = useState(false);
+  const [showMA, setShowMA] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -74,7 +75,17 @@ const InvestmentChart = () => {
   return (
     <div className="chart-container">
       <div className="chart-header">
-        <h2 className="chart-title">Evolución del Portafolio</h2>
+        <div className="chart-header-top">
+          <h2 className="chart-title">Evolución del Portafolio</h2>
+          <label className="chart-ma-toggle">
+            <input
+              type="checkbox"
+              checked={showMA}
+              onChange={(e) => setShowMA(e.target.checked)}
+            />
+            <span className="chart-ma-toggle-label">Mostrar MA</span>
+          </label>
+        </div>
         <div className="chart-summary">
           <div className="chart-summary-item">
             <div className="chart-summary-content">
@@ -291,6 +302,43 @@ const InvestmentChart = () => {
                   activeDot={CHART_STYLES.contributionsActiveDot}
                   connectNulls={false}
                 />
+                {showMA && (
+                  <>
+                    <Line
+                      type="monotone"
+                      dataKey="ma7"
+                      name="MA (7)"
+                      stroke={CHART_STYLES.ma7Line.stroke}
+                      strokeWidth={CHART_STYLES.ma7Line.strokeWidth}
+                      strokeDasharray={CHART_STYLES.ma7Line.strokeDasharray}
+                      dot={false}
+                      activeDot={CHART_STYLES.ma7ActiveDot}
+                      connectNulls={false}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="ma25"
+                      name="MA (25)"
+                      stroke={CHART_STYLES.ma25Line.stroke}
+                      strokeWidth={CHART_STYLES.ma25Line.strokeWidth}
+                      strokeDasharray={CHART_STYLES.ma25Line.strokeDasharray}
+                      dot={false}
+                      activeDot={CHART_STYLES.ma25ActiveDot}
+                      connectNulls={false}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="ma99"
+                      name="MA (99)"
+                      stroke={CHART_STYLES.ma99Line.stroke}
+                      strokeWidth={CHART_STYLES.ma99Line.strokeWidth}
+                      strokeDasharray={CHART_STYLES.ma99Line.strokeDasharray}
+                      dot={false}
+                      activeDot={CHART_STYLES.ma99ActiveDot}
+                      connectNulls={false}
+                    />
+                  </>
+                )}
               </ComposedChart>
             </ResponsiveContainer>
           ) : (
@@ -317,6 +365,58 @@ const InvestmentChart = () => {
               </svg>
               <span className="chart-legend-text">Total Depósitos</span>
             </li>
+            {showMA && (
+              <>
+                <li className="chart-legend-item">
+                  <svg width="14" height="14" className="chart-legend-icon">
+                    <line 
+                      x1="0" 
+                      y1="7" 
+                      x2="14" 
+                      y2="7" 
+                      stroke={CHART_STYLES.ma7Line.stroke} 
+                      strokeWidth="2"
+                      strokeDasharray="5 5"
+                    />
+                  </svg>
+                  <span className="chart-legend-text" style={{ color: CHART_STYLES.ma7Line.stroke }}>
+                    MA (7)
+                  </span>
+                </li>
+                <li className="chart-legend-item">
+                  <svg width="14" height="14" className="chart-legend-icon">
+                    <line 
+                      x1="0" 
+                      y1="7" 
+                      x2="14" 
+                      y2="7" 
+                      stroke={CHART_STYLES.ma25Line.stroke} 
+                      strokeWidth="2"
+                      strokeDasharray="5 5"
+                    />
+                  </svg>
+                  <span className="chart-legend-text" style={{ color: CHART_STYLES.ma25Line.stroke }}>
+                    MA (25)
+                  </span>
+                </li>
+                <li className="chart-legend-item">
+                  <svg width="14" height="14" className="chart-legend-icon">
+                    <line 
+                      x1="0" 
+                      y1="7" 
+                      x2="14" 
+                      y2="7" 
+                      stroke={CHART_STYLES.ma99Line.stroke} 
+                      strokeWidth="2"
+                      strokeDasharray="5 5"
+                    />
+                  </svg>
+                  <span className="chart-legend-text" style={{ color: CHART_STYLES.ma99Line.stroke }}>
+                    MA (99)
+                  </span>
+                </li>
+              </>
+            )}
           </ul>
         )}
       </div>

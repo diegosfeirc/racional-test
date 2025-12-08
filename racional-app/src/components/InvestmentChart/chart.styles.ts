@@ -15,8 +15,14 @@ export const CHART_STYLES = {
     },
     line: { stroke: '#8532d9', strokeWidth: 2 },
     contributionsLine: { stroke: '#9CA3AF', strokeWidth: 2 },
+    ma7Line: { stroke: '#FCD34D', strokeWidth: 2, strokeDasharray: '5 5' }, // Amarillo
+    ma25Line: { stroke: '#F472B6', strokeWidth: 2, strokeDasharray: '5 5' }, // Rosado
+    ma99Line: { stroke: '#18daae', strokeWidth: 2, strokeDasharray: '5 5' }, // Verde/Cyan
     activeDot: { r: 6, fill: '#8532d9', strokeWidth: 2, stroke: '#fff' },
     contributionsActiveDot: { r: 6, fill: '#9CA3AF', strokeWidth: 2, stroke: '#fff' },
+    ma7ActiveDot: { r: 5, fill: '#FCD34D', strokeWidth: 2, stroke: '#fff' },
+    ma25ActiveDot: { r: 5, fill: '#F472B6', strokeWidth: 2, stroke: '#fff' },
+    ma99ActiveDot: { r: 5, fill: '#18daae', strokeWidth: 2, stroke: '#fff' },
     area: {
       fillOpacity: 0.2,
       gradientId: 'profitGradient',
