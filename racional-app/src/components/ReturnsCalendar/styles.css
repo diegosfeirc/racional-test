@@ -764,3 +764,118 @@
   }
 }
 
+/* Periods Bar */
+.returns-calendar-periods-bar {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #ffffff;
+  border-radius: 0.5rem;
+  flex-shrink: 0;
+}
+
+.periods-bar-header {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.period-header {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.periods-bar-values {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.5rem;
+}
+
+.period-value {
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+}
+
+.period-value.return-positive {
+  color: #00a86b;
+}
+
+.period-value.return-negative {
+  color: #ff3333;
+}
+
+.period-value.return-zero,
+.period-value.return-neutral {
+  color: #9ca3af;
+}
+
+/* Responsive for periods bar */
+@media (max-width: 768px) {
+  .returns-calendar {
+    height: auto;
+    overflow: visible;
+  }
+
+  .returns-calendar-month-view,
+  .returns-calendar-year-view {
+    flex: none;
+    overflow: visible;
+    min-height: auto;
+    height: auto;
+  }
+
+  .calendar-grid,
+  .year-grid {
+    flex: none;
+    min-height: auto;
+    height: auto;
+  }
+
+  .returns-calendar-periods-bar {
+    padding: 0.75rem;
+    margin-top: 0.75rem;
+  }
+
+  .periods-bar-header {
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .period-header {
+    font-size: 0.625rem;
+  }
+
+  .periods-bar-values {
+    gap: 0.25rem;
+  }
+
+  .period-value {
+    font-size: 0.875rem;
+    padding: 0.375rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .periods-bar-header,
+  .periods-bar-values {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.25rem;
+  }
+
+  .period-header {
+    font-size: 0.5rem;
+  }
+
+  .period-value {
+    font-size: 0.625rem;
+    padding: 0.25rem 0.125rem;
+  }
+}
+

@@ -13,6 +13,7 @@ import {
   getDaysInMonth,
   getDay,
   isSameDay,
+  subDays,
 } from 'date-fns';
 import { useInvestmentEvolution } from '../investment/useInvestmentEvolution';
 import type { ViewMode, CalendarDay, CalendarMonth, PeriodStats } from '../../types/returns.types';
@@ -169,6 +170,42 @@ export const useReturnsCalendar = (
     }
   }, [viewMode, monthData, yearData]);
 
+  // Calcular totales de períodos desde el último valor recibido
+  const periodTotals = useMemo(() => {
+    if (processedData.length === 0) {
+      return {
+        today: null,
+        sevenDays: null,
+        thirtyDays: null,
+        ninetyDays: null,
+        oneEightyDays: null,
+        oneYear: null,
+      };
+    }
+
+    const lastDataPoint = processedData[processedData.length - 1];
+    const lastDate = lastDataPoint.date;
+
+    const calculatePeriodTotal = (daysBack: number): number | null => {
+      const startDate = subDays(lastDate, daysBack - 1);
+      const periodData = processedData.filter(
+        (item) => item.date >= startDate && item.date <= lastDate
+      );
+
+      if (periodData.length === 0) return null;
+      return periodData.reduce((sum, item) => sum + item.dailyReturn, 0);
+    };
+
+    return {
+      today: lastDataPoint.dailyReturn,
+      sevenDays: calculatePeriodTotal(7),
+      thirtyDays: calculatePeriodTotal(30),
+      ninetyDays: calculatePeriodTotal(90),
+      oneEightyDays: calculatePeriodTotal(180),
+      oneYear: calculatePeriodTotal(365),
+    };
+  }, [processedData]);
+
   // Navegación
   const handlePrevious = useCallback((): void => {
     if (viewMode === 'month') {
@@ -192,6 +229,7 @@ export const useReturnsCalendar = (
     monthData,
     yearData,
     periodStats,
+    periodTotals,
     viewMode,
     setViewMode,
     currentDate,

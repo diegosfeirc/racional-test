@@ -10,6 +10,7 @@ const ReturnsCalendar = () => {
     monthData,
     yearData,
     periodStats,
+    periodTotals,
     viewMode,
     setViewMode,
     currentDate,
@@ -183,6 +184,37 @@ const ReturnsCalendar = () => {
           </div>
         </div>
       )}
+
+      <div className="returns-calendar-periods-bar">
+        <div className="periods-bar-header">
+          <div className="period-header">Hoy</div>
+          <div className="period-header">7 Días</div>
+          <div className="period-header">30 Días</div>
+          <div className="period-header">90 Días</div>
+          <div className="period-header">180 Días</div>
+          <div className="period-header">1 Año</div>
+        </div>
+        <div className="periods-bar-values">
+          <div className={`period-value ${getReturnClass(periodTotals.today)}`}>
+            {formatReturn(periodTotals.today)}
+          </div>
+          <div className={`period-value ${getReturnClass(periodTotals.sevenDays)}`}>
+            {formatReturn(periodTotals.sevenDays)}
+          </div>
+          <div className={`period-value ${getReturnClass(periodTotals.thirtyDays)}`}>
+            {formatReturn(periodTotals.thirtyDays)}
+          </div>
+          <div className={`period-value ${getReturnClass(periodTotals.ninetyDays)}`}>
+            {formatReturn(periodTotals.ninetyDays)}
+          </div>
+          <div className={`period-value ${getReturnClass(periodTotals.oneEightyDays)}`}>
+            {formatReturn(periodTotals.oneEightyDays)}
+          </div>
+          <div className={`period-value ${getReturnClass(periodTotals.oneYear)}`}>
+            {formatReturn(periodTotals.oneYear)}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

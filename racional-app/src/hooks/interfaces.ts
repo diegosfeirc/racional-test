@@ -40,6 +40,14 @@ export interface UseReturnsCalendarReturn {
     monthData: CalendarDay[];
     yearData: CalendarMonth[];
     periodStats: PeriodStats;
+    periodTotals: {
+        today: number | null;
+        sevenDays: number | null;
+        thirtyDays: number | null;
+        ninetyDays: number | null;
+        oneEightyDays: number | null;
+        oneYear: number | null;
+    };
     
     // View mode
     viewMode: ViewMode;
