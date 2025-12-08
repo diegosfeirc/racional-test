@@ -1,6 +1,6 @@
 import type { ChartDataPoint, InvestmentEvolution } from "../types/investment.types";
 import type { Timeframe } from "./investment/useInvestmentChart";
-import type { ViewMode, CalendarDay, CalendarMonth, PeriodStats } from "../types/volatility.types";
+import type { ViewMode, CalendarDay, CalendarMonth, PeriodStats } from "../types/returns.types";
 
 // INVESTMENT CHART
 export interface UseInvestmentChartReturn {
@@ -32,8 +32,8 @@ export interface UseInvestmentEvolutionReturn {
     error: Error | null;
 }
 
-// VOLATILITY CALENDAR
-export interface UseVolatilityCalendarReturn {
+// RETURNS CALENDAR
+export interface UseReturnsCalendarReturn {
     // Data
     loading: boolean;
     error: Error | null;

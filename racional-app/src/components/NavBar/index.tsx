@@ -21,8 +21,8 @@ const NavBar: React.FC = () => {
       icon: <TrendingUpIcon className="nav-icon" />,
     },
     {
-      label: 'Volatilidad',
-      path: '/volatility',
+      label: 'Retornos',
+      path: '/returns',
       icon: <ShowChartIcon className="nav-icon" />,
     },
   ];

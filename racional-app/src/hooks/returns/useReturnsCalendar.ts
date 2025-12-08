@@ -15,24 +15,23 @@ import {
   isSameDay,
 } from 'date-fns';
 import { useInvestmentEvolution } from '../investment/useInvestmentEvolution';
-import type { ViewMode, CalendarDay, CalendarMonth, PeriodStats } from '../../types/volatility.types';
-import type { UseVolatilityCalendarReturn } from '../interfaces';
+import type { ViewMode, CalendarDay, CalendarMonth, PeriodStats } from '../../types/returns.types';
+import type { UseReturnsCalendarReturn } from '../interfaces';
 import {
   processFirestoreData,
   createDataMap,
   formatReturn,
   getReturnClass,
-  calculateMonthlyAverage,
-} from '../../utils/volatilityCalendar';
+} from '../../utils/returnsCalendar';
 
 /**
- * Hook personalizado para manejar la lógica del calendario de volatilidad
+ * Hook personalizado para manejar la lógica del calendario de retornos
  * @param userId - ID del usuario (por defecto 'user1')
  * @returns Objeto con datos procesados, navegación y utilidades
  */
-export const useVolatilityCalendar = (
+export const useReturnsCalendar = (
   userId: string = 'user1'
-): UseVolatilityCalendarReturn => {
+): UseReturnsCalendarReturn => {
   const { data, loading, error } = useInvestmentEvolution(userId);
   const [currentDate, setCurrentDate] = useState<Date>(new Date(2019, 0, 1));
   const [viewMode, setViewMode] = useState<ViewMode>('year');
@@ -110,7 +109,7 @@ export const useVolatilityCalendar = (
     return calendarDays;
   }, [currentDate, dataMap]);
 
-  // Calcular datos del año actual (promedios mensuales)
+  // Calcular datos del año actual (totales mensuales)
   const yearData = useMemo((): CalendarMonth[] => {
     const yearStart = startOfYear(currentDate);
     const yearEnd = endOfYear(currentDate);
@@ -127,11 +126,11 @@ export const useVolatilityCalendar = (
         }
       });
 
-      const averageReturn = calculateMonthlyAverage(monthReturns);
+      const totalReturn = monthReturns.reduce((sum, ret) => sum + ret, 0);
 
       return {
         month,
-        averageReturn,
+        totalReturn,
         daysCount: monthReturns.length,
       };
     });
@@ -156,7 +155,7 @@ export const useVolatilityCalendar = (
     } else {
       const yearReturns = yearData
         .filter((month) => month.daysCount > 0)
-        .map((month) => month.averageReturn);
+        .map((month) => month.totalReturn);
 
       const total = yearReturns.reduce((sum, ret) => sum + ret, 0);
       const count = yearReturns.length;

@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 import type { FirestoreDataPoint } from '../types/investment.types';
-import type { DailyReturnData } from '../types/volatility.types';
+import type { DailyReturnData } from '../types/returns.types';
 
 
 export const processFirestoreDate = (

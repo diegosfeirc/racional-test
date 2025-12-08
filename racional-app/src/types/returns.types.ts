@@ -1,5 +1,5 @@
 /**
- * Modos de visualización del calendario de volatilidad
+ * Modos de visualización del calendario de retornos
  */
 export type ViewMode = 'month' | 'year';
 
@@ -28,7 +28,7 @@ export interface CalendarDay {
  */
 export interface CalendarMonth {
   month: Date;
-  averageReturn: number;
+  totalReturn: number;
   daysCount: number;
 }
 

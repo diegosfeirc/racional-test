@@ -1,4 +1,4 @@
-.volatility-container {
+.returns-container {
   height: calc(100vh - 80px);
   background: linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 100%);
   padding: 1rem;
@@ -10,7 +10,7 @@
   overflow: hidden;
 }
 
-.volatility-container::before {
+.returns-container::before {
   content: '';
   position: absolute;
   top: 0;
@@ -20,7 +20,7 @@
   background: linear-gradient(90deg, transparent, rgba(147, 51, 234, 0.1), transparent);
 }
 
-.volatility-content {
+.returns-content {
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
@@ -45,49 +45,49 @@
   }
 }
 
-.volatility-content > * {
+.returns-content > * {
   animation: fadeInUp 0.6s ease-out;
 }
 
 @media (max-width: 1024px) {
-  .volatility-container {
+  .returns-container {
     padding: 1.5rem 1rem;
   }
   
-  .volatility-content {
+  .returns-content {
     max-width: 100%;
   }
 }
 
 @media (max-width: 768px) {
-  .volatility-container {
+  .returns-container {
     padding: 1rem 0.75rem;
     height: calc(100vh - 60px);
   }
   
-  .volatility-content {
+  .returns-content {
     gap: 0.5rem;
   }
 }
 
 @media (max-width: 640px) {
-  .volatility-container {
+  .returns-container {
     padding: 0.75rem 0.5rem;
     height: calc(100vh - 60px);
   }
   
-  .volatility-content {
+  .returns-content {
     gap: 0.5rem;
   }
 }
 
 @media (max-width: 480px) {
-  .volatility-container {
+  .returns-container {
     padding: 0.5rem 0.25rem;
     height: calc(100vh - 50px);
   }
   
-  .volatility-content {
+  .returns-content {
     gap: 0.25rem;
   }
 }

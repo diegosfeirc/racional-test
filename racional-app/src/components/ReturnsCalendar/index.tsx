@@ -1,9 +1,9 @@
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { useVolatilityCalendar } from '../../hooks/volatility/useVolatilityCalendar';
+import { useReturnsCalendar } from '../../hooks/returns/useReturnsCalendar';
 import './styles.css';
 
-const VolatilityCalendar = () => {
+const ReturnsCalendar = () => {
   const {
     loading,
     error,
@@ -18,20 +18,20 @@ const VolatilityCalendar = () => {
     handleNext,
     formatReturn,
     getReturnClass,
-  } = useVolatilityCalendar('user1');
+  } = useReturnsCalendar('user1');
 
   if (loading) {
     return (
-      <div className="volatility-calendar-loading">
-        <div className="volatility-calendar-spinner"></div>
-        <p>Cargando datos de volatilidad...</p>
+      <div className="returns-calendar-loading">
+        <div className="returns-calendar-spinner"></div>
+        <p>Cargando datos de retornos...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="volatility-calendar-error">
+      <div className="returns-calendar-error">
         <p className="error-title">Error al cargar datos</p>
         <p className="error-message">{error.message}</p>
       </div>
@@ -39,11 +39,11 @@ const VolatilityCalendar = () => {
   }
 
   return (
-    <div className="volatility-calendar">
-      <div className="volatility-calendar-header">
-        <div className="volatility-calendar-title-section">
-          <h2 className="volatility-calendar-title">Retornos Diarios y Mensuales</h2>
-          <div className="volatility-calendar-view-toggle">
+    <div className="returns-calendar">
+      <div className="returns-calendar-header">
+        <div className="returns-calendar-title-section">
+          <h2 className="returns-calendar-title">Retornos Diarios y Mensuales</h2>
+          <div className="returns-calendar-view-toggle">
             <button
               className={`view-toggle-button ${viewMode === 'month' ? 'active' : ''}`}
               onClick={() => setViewMode('month')}
@@ -63,29 +63,29 @@ const VolatilityCalendar = () => {
           </div>
         </div>
 
-        <div className="volatility-calendar-stats">
-          <div className="volatility-calendar-stat-item">
+        <div className="returns-calendar-stats">
+          <div className="returns-calendar-stat-item">
             <span className="stat-label">
-              {viewMode === 'month' ? 'Mes' : 'Año'} Total PNL
+              PNL {viewMode === 'month' ? 'Mensual' : 'Anual'} Total
             </span>
             <span className={`stat-value ${getReturnClass(periodStats.total)}`}>
               {formatReturn(periodStats.total)}
             </span>
           </div>
-          <div className="volatility-calendar-stat-item">
+          <div className="returns-calendar-stat-item">
             <span className="stat-label">Promedio</span>
             <span className={`stat-value ${getReturnClass(periodStats.average)}`}>
               {formatReturn(periodStats.average)}
             </span>
           </div>
-          <div className="volatility-calendar-stat-item">
-            <span className="stat-label">Días con datos</span>
+          <div className="returns-calendar-stat-item">
+            <span className="stat-label">{ viewMode === 'month' ? 'Días' : 'Meses'} con datos</span>
             <span className="stat-value">{periodStats.count}</span>
           </div>
         </div>
       </div>
 
-      <div className="volatility-calendar-navigation">
+      <div className="returns-calendar-navigation">
         <button
           className="nav-button"
           onClick={handlePrevious}
@@ -102,7 +102,7 @@ const VolatilityCalendar = () => {
           </svg>
         </button>
 
-        <h3 className="volatility-calendar-period">
+        <h3 className="returns-calendar-period">
           {viewMode === 'month'
             ? format(currentDate, 'MMMM yyyy', { locale: es })
             : format(currentDate, 'yyyy')}
@@ -126,7 +126,7 @@ const VolatilityCalendar = () => {
       </div>
 
       {viewMode === 'month' ? (
-        <div className="volatility-calendar-month-view">
+        <div className="returns-calendar-month-view">
           <div className="calendar-weekdays">
             {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map((day) => (
               <div key={day} className="weekday-header">
@@ -155,7 +155,7 @@ const VolatilityCalendar = () => {
           </div>
         </div>
       ) : (
-        <div className="volatility-calendar-year-view">
+        <div className="returns-calendar-year-view">
           <div className="year-grid">
             {yearData.map((monthData) => (
               <div
@@ -171,9 +171,9 @@ const VolatilityCalendar = () => {
                   {format(monthData.month, 'MMM', { locale: es })}
                 </div>
                 <div
-                  className={`year-month-return ${getReturnClass(monthData.averageReturn)}`}
+                  className={`year-month-return ${getReturnClass(monthData.totalReturn)}`}
                 >
-                  {formatReturn(monthData.averageReturn)}
+                  {formatReturn(monthData.totalReturn)}
                 </div>
                 <div className="year-month-days">
                   {monthData.daysCount} {monthData.daysCount === 1 ? 'día' : 'días'}
@@ -187,4 +187,5 @@ const VolatilityCalendar = () => {
   );
 };
 
-export default VolatilityCalendar;
+export default ReturnsCalendar;
+
